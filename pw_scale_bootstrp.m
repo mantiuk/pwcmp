@@ -35,6 +35,8 @@ function [jod, stats] = pw_scale_bootstrp( MM, boostrap_samples, options )
 %      some extra information. 'info' is the default option.
 %      'alpha' - the 'alpha' value for condidence interbal. Default value
 %      of 0.05 results in 95% confidence intervals.
+%      'use_parallel' - use parallel processing for bootstrapping. Possible
+%      values: 'always' (default) or 'never'.
 %
 % The function return:
 % jod - the JOD assigned to each condition. The firt element will be always
@@ -61,6 +63,7 @@ end
 opt = struct();
 opt.display = 'info';
 opt.alpha = 0.05;
+opt.use_parallel = 'always';
 for kk=1:2:length(options)
     if( ~isfield( opt, options{kk} ) )
         error( 'Unknown option %s', options{kk} );
@@ -86,14 +89,14 @@ end
 stats = struct();
 
 if( boostrap_samples == 1 || size(MM,1) < 2 )
-    stats.jod_low = jnd;
-    stats.jod_high = jnd;
+    stats.jod_low = jod;
+    stats.jod_high = jod;
     stats.jod_cov = zeros(N,N);
     return;
 end
 
 % Use if parallel proc toolbox available
-options = statset( 'UseParallel', 'always' ); 
+options = statset( 'UseParallel', opt.use_parallel ); 
 %options = statset(  );
 bstat = bootstrp( boostrap_samples, @boot_jod, MM, 'Options', options );
 

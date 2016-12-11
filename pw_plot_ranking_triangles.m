@@ -1,22 +1,22 @@
-function pw_plot_ranking_triangles( jnd, stats, CONDs )
+function pw_plot_ranking_triangles( jod, stats, CONDs )
 % Visualize significant differences using triangle plots
 % 
-% pw_plot_ranking_triangles( jnd, stats, CONDs )
+% pw_plot_ranking_triangles( jod, stats, CONDs )
 %
-% jnd - JND values, produced by pw_scale_bootstrp
+% jod - JOD values, produced by pw_scale_bootstrp
 % stats - stats structure, produced by pw_scale_bootstrp. The only relevant
-%         element of that structure is covariance matrix jnd_cov.
+%         element of that structure is covariance matrix jod_cov.
 % CONDs - cell array with the labels used for each plotted conditions. Must be the 
-%         same size as "jnd".
+%         same size as "jod".
 
 
 % Construct a matrix with statistically significant differences between
 % pairs of conditions
-[p, D] = pw_significance_matrix( jnd, stats );
+[p, D] = pw_significance_matrix( jod, stats );
 ssd = p<0.025; % Two-tailed test
 
-scs = jnd;
-cond_count = length(jnd);
+scs = jod;
+cond_count = length(jod);
 
 [~, rank] = sort( scs, 'ascend' );
 
