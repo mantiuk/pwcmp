@@ -33,7 +33,7 @@ for sc=1:length(SCs)
     
     OBSs = unique( Ds.observer );
     
-    jnd = zeros( N, 1 );
+    jod = zeros( N, 1 );
     
     boostrap_samples = 10;
     
@@ -66,9 +66,9 @@ for sc=1:length(SCs)
     end
     
     tic
-    [jnd, stats] = pw_scale_bootstrp( MM, 50 );
+    [jod, stats] = pw_scale_bootstrp( MM, 50, { 'use_parallel', 'never' } );
     toc
-    jnd_se = sqrt(diag(stats.jnd_cov));
+    jod_se = sqrt(diag(stats.jod_cov));
     
     dist_level = zeros( N, 1 );
     dist_type = cell( N, 1 );
@@ -84,11 +84,11 @@ for sc=1:length(SCs)
     end
     
     Rn = dataset( { dist_type, 'dist_type' }, { dist_level, 'dist_level' }, ...
-        { jnd, 'jnd' }, { stats.jnd_low, 'jnd_low' }, { stats.jnd_high, 'jnd_high' }, ...
-        { jnd_se, 'jnd_se' }, ...
+        { jod, 'jod' }, { stats.jod_low, 'jod_low' }, { stats.jod_high, 'jod_high' }, ...
+        { jod_se, 'jod_se' }, ...
         { repmat( { SCs{sc} }, [N 1] ), 'scene' } );
     
-    PC.(SCs{sc}) = stats.jnd_cov;
+    PC.(SCs{sc}) = stats.jod_cov;
     
     if( ~isempty(R) )
         R = vertcat( R, Rn );

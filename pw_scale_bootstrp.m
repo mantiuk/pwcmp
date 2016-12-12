@@ -95,6 +95,10 @@ if( boostrap_samples == 1 || size(MM,1) < 2 )
     return;
 end
 
+if( opt.display_level > 0 )
+    display( sprintf( 'Generating %d bootstrap samples. It can take a while', boostrap_samples ) );
+end
+
 % Use if parallel proc toolbox available
 options = statset( 'UseParallel', opt.use_parallel ); 
 %options = statset(  );
