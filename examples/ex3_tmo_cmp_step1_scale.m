@@ -58,7 +58,7 @@ for sc=1:length(SCs)
                 error( 'Cannot find condition %s', Dso.condition_2(kk) );
             end
             
-            if( Dso.selection(kk) == 0 )
+            if( Dso.selected(kk) == 0 )
                 M(c1,c2) = M(c1,c2) + 1; % c1 better than c2
             else
                 M(c2,c1) = M(c2,c1) + 1; % c2 better than c1
