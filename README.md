@@ -1,6 +1,6 @@
 # pwcmp 
 
-This is a set of matlab functions for scaling of pairwise comparison experiment results based on the Thurstone's model V assumptions.
+This is a set of matlab functions for scaling of pairwise comparison experiment results based on Thurstone's model V assumptions.
 
 The main features:
 
@@ -12,7 +12,22 @@ The main features:
 
 ## Usage
 
-See examples in "examples" directory.
+'''
+% Simple example showing how to execute scaling method
+
+% Comparison matrix. This is an incomplete design in which 1-st conditon was
+% compared with the 2nd and 2nd with the 3rd. In both cases 75 observers
+% seleted one condition and 25 the other.
+D = [ 0   25  0;
+      75  0  25;
+      0   75 0  ];
+   
+Q = pw_scale( D );
+
+display( Q )
+'''
+
+See more examples in "examples" directory.
 
 ## Revision history
 
