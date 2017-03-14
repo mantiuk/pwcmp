@@ -12,7 +12,7 @@ The main features:
 
 ## Usage
 
-'''
+```
 % Simple example showing how to execute scaling method
 
 % Comparison matrix. This is an incomplete design in which 1-st conditon was
@@ -25,7 +25,7 @@ D = [ 0   25  0;
 Q = pw_scale( D );
 
 display( Q )
-'''
+```
 
 See more examples in "examples" directory.
 
