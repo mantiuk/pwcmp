@@ -1,4 +1,4 @@
-function [Q, R] = pw_scale( D )
+function [Q, R] = pw_scale( D, use_prior )
 % Scaling method for pairwise comparisons, also for non-balanced
 % (incomplete) designs.
 %
@@ -37,6 +37,9 @@ function [Q, R] = pw_scale( D )
 % 2016-03-19 - Fixed graph connectivity patch; Replaced UA weights with
 %              a conditional prior
 
+if nargin<2,
+	use_prior = 1;
+end
 
 if( size(D,1) ~= size(D,2) )
     error( 'The comparison matrix must be square' );
@@ -133,26 +136,27 @@ for ii=1:N
 end
 
 
+JOD_dist_data = norminv( D./D_sum, 0, 1.4826 );
+
+f = @(x)exp_prob(x,use_prior);
+
 % The methods tend to be more robust if starting scores are 0
-Q = fminunc( @exp_prob, zeros(N-1,1), options );
+Q = fminunc( f, zeros(N-1,1), options );
 
 % Add missing leading 0-score for the first condition (not optimized)
 Q = cat( 1, 0, Q );
 
 % Calculate the matrix of residuals
 JOD_dist_fit = repmat( Q, [1 N] ) - repmat( Q', [N 1] ); % Compute the distances
-JOD_dist_data = norminv( D./D_sum, 0, 1.4826 );
 
 R = NaN( size(D) );
 valid = nnz_d & NUA;
 R(valid) = JOD_dist_fit(valid) -  JOD_dist_data(valid);
 
-    function P = exp_prob( q_trunc )
+    function P = exp_prob( q_trunc, use_prior )
         
         q = cat( 1, 0, q_trunc ); % Add the condition with index 1, which is fixed to 0
-                
-        q_range = max(q)-min(q);
-        
+                        
         sigma_cdf = 1.4826; % for this sigma normal cummulative distrib is 0.75 @ 1
         Dd = repmat( q, [1 N] ) - repmat( q', [N 1] ); % Compute the distances
         Pd = normcdf( Dd, 0, sigma_cdf ); % and probabilities
@@ -164,15 +168,53 @@ R(valid) = JOD_dist_fit(valid) -  JOD_dist_data(valid);
         p2 = binopdf( D(nnz_gauss), D_sum(nnz_gauss), Pd(nnz_gauss) );
         
         % The prior 
-        n_e = q_range+1;
-        p1_prior = max( NUA(nnz_bino), 1/n_e - abs(D(nnz_bino))/n_e.^2 );
-        p2_prior = max( NUA(nnz_gauss), 1/n_e - abs(D(nnz_gauss))/n_e.^2 );
+        if use_prior,
+            counter = 1;
+            
+            % We compute the joint likelihood of each distance
+            for ii=1:(N),
+                for jj=1:N,
+
+                    n = sum(D(ii,jj)+D(jj,ii));
+                    %If the comparison has been performed
+                    if n>0,
+
+                        % Fix unanimous answers
+                        [k2,indmin] = min([D(ii,jj),D(jj,ii)]);
+                        
+                        if k2==0,
+                            if indmin==2,
+                                k = D(ii,jj) - 1;
+                            else
+                                k = 1;
+                            end
+                        else
+                            k = D(ii,jj);
+                        end
+
+                        p = normcdf( (Dd(nnz_bino | nnz_gauss)), 0, sigma_cdf );
+
+                        P = nchoosek( n, k ) * p.^k .* (1-p).^(n-k);
+                        % Normalise likelihood and save it
+                        A(counter,:) = P./sum(P);
+                        counter = counter + 1;
+
+                    end
+                end
+            end
+
+            % Consider the likelihoods of all conditions for all distances
+            prior = sum(A)/sum(sum(A));
+            P = -sum( log( max( [p1; p2], 1e-200).*prior' ) ); 
+        else
+            P = -sum( log( max( [p1; p2], 1e-200) ) ); 
+        end
         
-        P = -sum( log( max( [p1.*p1_prior; p2.*p2_prior], 1e-200) ) );                        
+        
+        %P = -sum(D(nnz_bino | nnz_gauss).*log(Pd(nnz_bino)));
     end
 
 
-end
 
 
 function node_gr = connected_comp( G, node_gr, node, group )
@@ -183,4 +225,6 @@ node_gr(node) = group;
 for nn=find(G(node,:))
     node_gr = connected_comp( G, node_gr, nn, group );
 end
+end
+
 end
