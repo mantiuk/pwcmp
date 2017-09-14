@@ -58,7 +58,6 @@ res_true_qm = q_m-q;
 ci = mean( cat( 2, e_up(2:end), e_low(2:end) ) );
 bias = mean( res_true_qm(2:end) );
 res_est = q_s-repmat( q_m, [size(q_s,1) 1] );
-%res_true = q_s-repmat( q, [size(q_s,1) 1] );
 
 d = mean( diff(q_m)./std( res_est(:,2:end) ) );
 meas_mse = mean( res_true_qm(2:end).^2 );
