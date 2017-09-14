@@ -33,10 +33,12 @@ function [jod, stats] = pw_scale_bootstrp( MM, boostrap_samples, options )
 % options - a cell array with the options. Currently recognized options:
 %      'display' - set to 'none' for quite operation, and 'info' to show
 %      some extra information. 'info' is the default option.
-%      'alpha' - the 'alpha' value for condidence interbal. Default value
+%      'alpha' - the 'alpha' value for condidence interval. Default value
 %      of 0.05 results in 95% confidence intervals.
 %      'use_parallel' - use parallel processing for bootstrapping. Possible
 %      values: 'always' (default) or 'never'.
+%	   'prior' - Boolean indicating whether to use distance prior in the 
+%	   optimization. Set to 'true' by default. 
 %
 % The function return:
 % jod - the JOD assigned to each condition. The firt element will be always
@@ -64,6 +66,7 @@ opt = struct();
 opt.display = 'info';
 opt.alpha = 0.05;
 opt.use_parallel = 'always';
+opt.prior = 1;
 for kk=1:2:length(options)
     if( ~isfield( opt, options{kk} ) )
         error( 'Unknown option %s', options{kk} );
@@ -80,7 +83,8 @@ opt.display_level = strcmp( opt.display, 'info' );
 N = sqrt( size(MM,2) );
 
 M = reshape( sum(MM,1), N, N );
-[jod, R] = pw_scale( round(M) );
+
+[jod, R] = pw_scale( round(M), opt.prior );
 Rv = abs(R(~isnan(R)));
 if( opt.display_level > 0 )
     display( sprintf( 'Residual due to scaling: mean = %g; min = %g; max = %g', mean(Rv), min(Rv), nanmax(Rv) ) );
@@ -121,7 +125,7 @@ stats.jod_cov = cov( bstat )';
 
 function Q = boot_jod( MM_bst )    
     M = reshape( sum(MM_bst,1), N, N );
-    Q = pw_scale( M );
+    Q = pw_scale( M, opt.prior );
 end
 
 
