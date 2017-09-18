@@ -159,7 +159,7 @@ R(valid) = JOD_dist_fit(valid) -  JOD_dist_data(valid);
         % Compute likelihoods for N<=30 and N>30
         p1 = NK(nnz_bino).*Pd(nnz_bino).^D(nnz_bino).*(1-Pd(nnz_bino)).^Dt(nnz_bino);
         p2 = binopdf( D(nnz_gauss), D_sum(nnz_gauss), Pd(nnz_gauss) );
-        
+
         % Compute prior
         if use_prior,
             comp_made = sum(sum(nnz_d));
@@ -174,10 +174,7 @@ R(valid) = JOD_dist_fit(valid) -  JOD_dist_data(valid);
                         k = D_wUA(ii,hh);
                         % Compute the probability of each distance
                         % according to all our answers
-                        P = NK_wUA(ii,hh) * Pd(nnz_d).^k .* (1-Pd(nnz_d)).^(n-k);
-                       
-                        % Normalise likelihood 
-                        all_likelihoods(counter,:) = P./sum(P);
+                        all_likelihoods(counter,:) = max([NK_wUA(ii,hh) * Pd(nnz_bino).^k .* (1-Pd(nnz_bino)).^(n-k); binopdf( k, n, Pd(nnz_gauss) )],1e-200);
                         counter = counter + 1;
 
                     end
@@ -186,7 +183,8 @@ R(valid) = JOD_dist_fit(valid) -  JOD_dist_data(valid);
             % The mean likelihood per answer is our prior (i.e., we compute
             % the probability of observing a certain distance according to
             % the rest of the answers in our comparison matrix)
-            prior = (mean(all_likelihoods))';
+            
+            prior = (sum(all_likelihoods))'/sum(sum(all_likelihoods));
         else
             prior = zeros(size(p1));
         end
@@ -207,4 +205,5 @@ end
 end
 
 end
+
 
