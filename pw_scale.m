@@ -160,9 +160,10 @@ R(valid) = JOD_dist_fit(valid) -  JOD_dist_data(valid);
         p1 = NK(nnz_bino).*Pd(nnz_bino).^D(nnz_bino).*(1-Pd(nnz_bino)).^Dt(nnz_bino);
         p2 = binopdf( D(nnz_gauss), D_sum(nnz_gauss), Pd(nnz_gauss) );
 
+	comp_made = sum(sum(nnz_d));
         % Compute prior
         if use_prior,
-            comp_made = sum(sum(nnz_d));
+            
             all_likelihoods = zeros(comp_made,comp_made);
             counter = 1;
             for ii=1:N,
@@ -186,7 +187,7 @@ R(valid) = JOD_dist_fit(valid) -  JOD_dist_data(valid);
             
             prior = (sum(all_likelihoods))'/sum(sum(all_likelihoods));
         else
-            prior = zeros(size(p1));
+            prior = ones(comp_made,1);
         end
                 
         P = -sum( log( max( [p1; p2], 1e-200).*prior ) );
