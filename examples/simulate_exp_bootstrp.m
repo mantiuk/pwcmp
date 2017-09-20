@@ -31,7 +31,7 @@ for ee=1:N_exps
                 tie_thr = max( 0, 0.7+randn()*0.3 );
                 D = ((x_r' * ones(1,N)) - (ones(N,1) * x_r));
                 M = M + (D>=tie_thr);
-                M = M + (D>-tie_thr & D<tie_thr)*0.5;
+                M = M + ((D>-tie_thr & D<tie_thr)*0.5).*~eye(size(D));
             else
                 M = M + ((x_r' * ones(1,N)) > (ones(N,1) * x_r));
             end
