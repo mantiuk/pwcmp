@@ -51,20 +51,8 @@ end
 N = size( D, 1 );  % The number of compared conditions
 
 % Change votes into probabilities - also for incomplete design
-M = D;
-for rr=1:N
-    for cc=(rr+1):N
-        C = M(rr,cc)+M(cc,rr);
-        if( C == 0 )
-            M(rr,cc) = 0.5;
-            M(cc,rr) = 0.5;
-        else
-            M(rr,cc) = M(rr,cc)/C;
-            M(cc,rr) = M(cc,rr)/C;
-        end
-    end
-end
-M(eye(N)==1) = 0.5;
+M = D./(D + D');
+M(isnan(M)) = 0.5;
 
 % inverse cummative distrib, from ISO 20462
 Q = sum( -(12/pi * asin( sqrt(M) ) - 3)/2, 1 )';
@@ -73,7 +61,6 @@ Q = sum( -(12/pi * asin( sqrt(M) ) - 3)/2, 1 )';
 NUA = (D>0) .* (D'>0); 
 G = (D+D')>0;
 UA = G - NUA;
-n_UA = sum(sum(UA))/2;
 
 % find connected components
 group = 0;
@@ -114,7 +101,11 @@ options = optimset( 'Display', 'off', 'LargeScale', 'off' );
 D_sum = D + D';
 Dt = D';
 nnz_d = (D_sum)>0;
-comp_made = sum(sum(nnz_d));
+
+% Use binomial distribution when N<=30, Gaussian otherwise (is faster and is a good
+% approximation)
+nnz_bino = (D_sum<=30) & nnz_d;
+nnz_gauss = (D_sum>30) & nnz_d;
 
 % Comparison matrix where we shift unanimous answers to the closest
 % non-unanimous solution
@@ -125,20 +116,20 @@ D_wUA(UA==1 & D==0) = 1;
 D_wUA(UA==1 & D~=0) = D_wUA(UA==1 & D~=0) - 1;
 
 % Precompute to speed-up computation
-
 NK = zeros(N,N);
 NK_wUA = zeros(N,N);
 for ii=1:N
 	for jj=1:N
+        if( nnz_bino(ii,jj) )
             NK(ii,jj) = nchoosek( D_sum(jj,ii), D(ii,jj) );
             if use_prior && UA(ii,jj),
                 NK_wUA(ii,jj) = nchoosek( D_sum(jj,ii), D_wUA(ii,jj) );
             else
                 NK_wUA(ii,jj) = NK(ii,jj);
             end
+        end
     end
 end
-
 
 JOD_dist_data = norminv( D./D_sum, 0, 1.4826 );
 
@@ -165,24 +156,28 @@ R(valid) = JOD_dist_fit(valid) -  JOD_dist_data(valid);
         Dd = repmat( q, [1 N] ) - repmat( q', [N 1] ); % Compute the distances
         Pd = normcdf( Dd, 0, sigma_cdf ); % and probabilities  
 
-        % Compute likelihoods
-        p1 = NK(nnz_d).*Pd(nnz_d).^D(nnz_d).*(1-Pd(nnz_d)).^Dt(nnz_d);        
+        % Compute likelihoods for N<=30 and N>30
+        p1 = NK(nnz_bino).*Pd(nnz_bino).^D(nnz_bino).*(1-Pd(nnz_bino)).^Dt(nnz_bino);
+        p2 = binopdf( D(nnz_gauss), D_sum(nnz_gauss), Pd(nnz_gauss) );
         
         % Compute prior
         if use_prior,
-            all_likelihoods = zeros(comp_made,1);
+            comp_made = sum(sum(nnz_d));
+            all_likelihoods = zeros(comp_made,comp_made);
             counter = 1;
-            for zz=1:N,
+            for ii=1:N,
                 for hh=1:N,
 
-                    n = D_sum(zz,hh);
+                    n = D_sum(ii,hh);
                     %If the comparison has been performed
                     if n>0,
-                        k = D_wUA(zz,hh);
+                        k = D_wUA(ii,hh);
                         % Compute the probability of each distance
                         % according to all our answers
+                        P = NK_wUA(ii,hh) * Pd(nnz_d).^k .* (1-Pd(nnz_d)).^(n-k);
                        
-                        all_likelihoods = all_likelihoods + (NK_wUA(zz,hh) .* Pd(nnz_d).^k .* (1-Pd(nnz_d)).^(n-k));
+                        % Normalise likelihood 
+                        all_likelihoods(counter,:) = P./sum(P);
                         counter = counter + 1;
 
                     end
@@ -191,13 +186,13 @@ R(valid) = JOD_dist_fit(valid) -  JOD_dist_data(valid);
             % The mean likelihood per answer is our prior (i.e., we compute
             % the probability of observing a certain distance according to
             % the rest of the answers in our comparison matrix)
-            
-            prior = all_likelihoods/(sum(all_likelihoods));
+            prior = (mean(all_likelihoods))';
         else
-            prior = ones(comp_made,1);
+            prior = zeros(size(p1));
         end
+                
+        P = -sum( log( max( [p1; p2], 1e-200).*prior ) );
         
-        P = -sum( log( max( p1, 1e-200).*prior ) );
         
     end
 
