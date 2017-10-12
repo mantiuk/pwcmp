@@ -126,14 +126,13 @@ valid = nnz_d & NUA;
 R(valid) = JOD_dist_fit(valid) -  JOD_dist_data(valid);
 
     function P = exp_prob( q_trunc, use_prior )
-        
         q = cat( 1, 0, q_trunc ); % Add the condition with index 1, which is fixed to 0
                         
         sigma_cdf = 1.4826; % for this sigma normal cummulative distrib is 0.75 @ 1
         Dd = repmat( q, [1 N] ) - repmat( q', [N 1] ); % Compute the distances
         Pd = normcdf( Dd, 0, sigma_cdf ); % and probabilities  
 
-        % Compute likelihoods for N<=30 and N>30
+        % Compute likelihoods
         prob = Pd(nnz_d);
         p = prob.^D(nnz_d) .*(1-prob).^Dt(nnz_d);        
         
@@ -163,8 +162,7 @@ R(valid) = JOD_dist_fit(valid) -  JOD_dist_data(valid);
             prior = ones(comp_made,1);
         end
         
-        P = -sum( log( max( p, 1e-200)  ) + log( max( prior, 1e-200) )  );
-        
+        P = -sum( log( max( p, 1e-200)  ) + log( max( prior + 0.1, 1e-200) )  );
     end
 
 function node_gr = connected_comp( G, node_gr, node, group )
@@ -178,4 +176,3 @@ end
 end
 
 end
-
