@@ -21,14 +21,14 @@ We recommend to keep the data in a tabulated format, such as comma-separated-fil
 
 ```
 | Observer | Session | Scene | Condition|_1 | Condition|_2 | Selection |
-| --- | --- | --- | ---| --- | --- |
-| 1 | 1 | Window	| TMO|_Camera	| Ferwerda96 | 1 |
-| 1 | 1 | Exhibition | Ronan12 | Irawan05	| 2 ||
+| ----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
+| 1 | 1 | Window	| TMO_Camera	| Ferwerda96 | 1 |
+| 1 | 1 | Exhibition | Ronan12 | Irawan05	| 2 |
 | 1 | 1 | Corridor | Irawan05 | Ferwerda96 |	1 |
-| 2 | 2 | Corridor |	Ronan12 | TMO|_Camera | 2|
+| 2 | 2 | Corridor |	Ronan12 | TMO_Camera | 2|
 ```
 
-The first step is to convert the answers from the table into a set of comparison matrices M, one matrix per each observer. In such a matrix, columns and rows correspond to compared conditions and matrix value c|_{ij}=n means that condition O|_i was n times selected as better than condition O|_j. If there is a reference condition, such as a non-distorted image, it should be put in the matrix as the first condition in the first row and column. The first condition will be assigned a fixed quality value of 0. 
+The first step is to convert the answers from the table into a set of comparison matrices M, one matrix per each observer. In such a matrix, columns and rows correspond to compared conditions and matrix value c_{ij}=n means that condition O_i was n times selected as better than condition O_j. If there is a reference condition, such as a non-distorted image, it should be put in the matrix as the first condition in the first row and column. The first condition will be assigned a fixed quality value of 0. 
 
 The second step is to perform outlier analysis to detect potential observers who performed very differently from the rest. The function to perform this analysis is
 
@@ -38,7 +38,7 @@ The second step is to perform outlier analysis to detect potential observers who
 
 ```
 
-which receives a matrix M with the responses per observer and returns the likelihood L of observing the data of each observer and a inter-quartile-normalised score L|_dist, which indicates the observers that should be further investigated. Since there is no objective threshold that could distinguish outliers with high confidence, we advise to investigate all observers whose L|_dist score is close or above the customary threshold of 1.5.
+which receives a matrix M with the responses per observer and returns the likelihood L of observing the data of each observer and a inter-quartile-normalised score L_dist, which indicates the observers that should be further investigated. Since there is no objective threshold that could distinguish outliers with high confidence, we advise to investigate all observers whose L_dist score is close or above the customary threshold of 1.5.
 
 The results for the 18 observers in the analysed dataset indicate that there is one observer with a score of 2.72, which requires further attention.
 
