@@ -20,6 +20,7 @@ The code for this example can be found in the "examples" folder, under the name 
 We recommend to keep the data in a tabulated format, such as comma-separated-files (CSV), in which each condition is described by meaningful labels. Such files are easy to read with any software and can be easily interpreted even long after the data have been collected. The following table shows a few rows from the analysed dataset.
 
 ```
+
 | Observer | Session | Scene | Condition|_1 | Condition|_2 | Selection |
 | ----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
 | 1 | 1 | Window	| TMO_Camera	| Ferwerda96 | 1 |
@@ -42,7 +43,7 @@ which receives a matrix M with the responses per observer and returns the likeli
 
 The results for the 18 observers in the analysed dataset indicate that there is one observer with a score of 2.72, which requires further attention.
 
-To compare the answers of the indicated observer (observer number n|_obs) to the rest of observers, we use the function 
+To compare the answers of the indicated observer (observer number n_obs) to the rest of observers, we use the function 
 
 
 ```
