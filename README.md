@@ -19,7 +19,17 @@ The code for this example can be found in the "examples" folder, under the name 
 
 We recommend to keep the data in a tabulated format, such as comma-separated-files (CSV), in which each condition is described by meaningful labels. Such files are easy to read with any software and can be easily interpreted even long after the data have been collected. The following table shows a few rows from the analysed dataset.
 
+| Command | Description |
+| --- | --- |
+| git status | List all new or modified files |
+| git diff | Show file differences that haven't been staged |
+
 ```
+
+| Command | Description |
+| --- | --- |
+| git status | List all new or modified files |
+| git diff | Show file differences that haven't been staged |
 
 | Observer | Session | Scene | Condition_1 | Condition_2 | Selection |
 | ----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
