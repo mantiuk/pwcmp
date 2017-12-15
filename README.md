@@ -19,18 +19,14 @@ The code for this example can be found in the "examples" folder, under the name 
 
 We recommend to keep the data in a tabulated format, such as comma-separated-files (CSV), in which each condition is described by meaningful labels. Such files are easy to read with any software and can be easily interpreted even long after the data have been collected. The following table shows a few rows from the analysed dataset.
 
-
+```
 | Observer | Session | Scene | Condition|_1 | Condition|_2 | Selection |
-
 | --- | --- | --- | ---| --- | --- |
-
 | 1 | 1 | Window	| TMO|_Camera	| Ferwerda96 | 1 |
-
 | 1 | 1 | Exhibition | Ronan12 | Irawan05	| 2 ||
-
 | 1 | 1 | Corridor | Irawan05 | Ferwerda96 |	1 |
-
 | 2 | 2 | Corridor |	Ronan12 | TMO|_Camera | 2|
+```
 
 The first step is to convert the answers from the table into a set of comparison matrices M, one matrix per each observer. In such a matrix, columns and rows correspond to compared conditions and matrix value c|_{ij}=n means that condition O|_i was n times selected as better than condition O|_j. If there is a reference condition, such as a non-distorted image, it should be put in the matrix as the first condition in the first row and column. The first condition will be assigned a fixed quality value of 0. 
 
