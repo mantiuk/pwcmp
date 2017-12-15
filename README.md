@@ -15,13 +15,13 @@ The main features:
 ## Usage
 
 
-The code for this example can be found in the "examples" folder, under the name of video|_TMO|_analysis|_example, in which we analyse the data from a video tone mapping evaluation project.
+The code for this example can be found in the "examples" folder, under the name of video_TMO_analysis_example, in which we analyse the data from a video tone mapping evaluation project.
 
 We recommend to keep the data in a tabulated format, such as comma-separated-files (CSV), in which each condition is described by meaningful labels. Such files are easy to read with any software and can be easily interpreted even long after the data have been collected. The following table shows a few rows from the analysed dataset.
 
 ```
 
-| Observer | Session | Scene | Condition|_1 | Condition|_2 | Selection |
+| Observer | Session | Scene | Condition_1 | Condition_2 | Selection |
 | ----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
 | 1 | 1 | Window	| TMO_Camera	| Ferwerda96 | 1 |
 | 1 | 1 | Exhibition | Ronan12 | Irawan05	| 2 |
