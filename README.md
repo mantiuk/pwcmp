@@ -100,11 +100,7 @@ v0.1 (14.12.2016) Internal release
 
 There is a number of papers describing the technique. When using the code, please cite [1]: 
 
-[1] M. Perez-Ortiz and R. K. Mantiuk, “A practical guide and software for analysing pairwise comparison experiments”, arXiv Stat.AP, 2017.
-
-However, the code contains a few improvements that make scaling more
-robust and less prone to bias. Those extensions will be documented in
-a separate report (to be published).
+[1] M. Perez-Ortiz and R. K. Mantiuk, “A practical guide and software for analysing pairwise comparison experiments”, arXiv Stat.AP, 2017, accessible at https://arxiv.org/abs/1712.03686
 
 ## License
 
