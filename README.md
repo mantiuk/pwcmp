@@ -105,9 +105,13 @@ There is a number of papers describing the technique. When using the code, pleas
 The scaling method and code has been used in the following papers: 
 
 [2] K. Karaduzovic-Hadziabdic, J. H. Telalovic and R. K. Mantiuk, “Subjective and Objective Evaluation of Multi-exposure High Dynamic Range Image Deghosting Methods”, In Eurographics - Short Papers, 2016, pp. 29-32.
+
 [3] G. Eilertsen, R. K. Mantiuk and J. Unger, “Real-time noise-aware tone mapping”. ACM Transactions on Graphics, 2015, 34(6), pp. 1-15.
+
 [4] P. Vangorp, R. K. Mantiuk, B. Bazyluk, K. Myszkowski, R. Mantiuk, S. J. Watt and H.-P. Seidel, “Depth from HDR: depth induction or increased realism?” In ACM Symposium on Applied Perception - SAP, 2014, pp. 71-78. ACM Press.
+
 [5] R. Wanat and R. K. Mantiuk, “Simulating and compensating changes in appearance between day and night vision”, ACM Transactions on Graphics (Proc. of SIGGRAPH), 2014, 33(4):147.
+
 [6] M.H. Kedjar, G. Ward, H. Yoo, A. Soudi, T. Akhavan and C. Vazquez, “A Unified Color and Contrast Age-Dependent Visual Content Adaptation”, International Conference on Image Analysis and Processing ‑ ICIAP, 2017, pp. 765-778.
 
 ## License
