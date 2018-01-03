@@ -114,6 +114,16 @@ The scaling method and code has been used in the following papers:
 
 [6] M.H. Kedjar, G. Ward, H. Yoo, A. Soudi, T. Akhavan and C. Vazquez, “A Unified Color and Contrast Age-Dependent Visual Content Adaptation”, International Conference on Image Analysis and Processing ‑ ICIAP, 2017, pp. 765-778.
 
+[7] G. Eilertsen, J. Kronander, G. Denes, R.K. Mantiuk and J. Unger, “HDR image reconstruction from a single exposure using deep CNNs”, ACM Transaction on Graphics (Proc. SIGGRAPH Asia), 2017, 36(6):178.
+
+[8] E. Zerman, V. Hulusic, G. Valenzise, R.K. Mantiuk and F. Dufaux, “Effect of color space on high dynamic range video compression performance”, 9th International Conference on Quality of Multimedia Experience, QoMEX, 2017.
+
+[9] V.K. Adhikarla, M. Vinkler, D. Sumin, et al., “Towards a quality metric for dense light fields”, In Proceedings of Computer Vision and Pattern Recognition (CVPR), 2017, pp 58-67.
+
+[10] G. Eilertsen, J. Unger and R.K. Mantiuk, “Evaluation of Tone Mapping Operators for HDR Video”, High Dynamic Range Video (book), 2016, pp. 185-207.
+
+A different version of the software was used in each of the above mentioned publications, which could result in small differences in the scaled results.
+
 ## License
 
 MIT
