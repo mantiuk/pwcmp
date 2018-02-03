@@ -140,14 +140,19 @@ R(valid) = JOD_dist_fit(valid) -  JOD_dist_data(valid);
         
         sigma_cdf = 1.4826; % for this sigma normal cummulative distrib is 0.75 @ 1
         Dd = repmat( q, [1 N] ) - repmat( q', [N 1] ); % Compute the distances
-        Pd = normcdf( Dd, 0, sigma_cdf ); % and probabilities
+        
+        
+        p_mist = 0.01; % Probability that an observer makes a mistake
+        Pd = p_mist + (1-2*p_mist)*normcdf( Dd, 0, sigma_cdf ); % and probabilities
+        %Pd = normcdf( Dd, 0, sigma_cdf ); % and probabilities
                             
         Dt = D';
 
         % Note that the binomial coefficient is irrelavant for optimzation because of the
         % log transform that we apply later
+        
         p = Pd(nnz_d).^D(nnz_d).*(1-Pd(nnz_d)).^Dt(nnz_d);
-
+        
         % The prior 
         n_e = q_range+1;
         p_prior = max( NUA(nnz_d), 1/n_e - abs(D(nnz_d))/n_e.^2 );
