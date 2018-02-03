@@ -117,21 +117,6 @@ options = optimset( 'Display', 'off', 'LargeScale', 'off' );
 D_sum = D + D';
 nnz_d = (D_sum)>0;
 
-% Use binomial distribution when N<=30, Gaussian otherwise (is faster and is a good
-% approximation)
-nnz_bino = (D_sum<=30) & nnz_d;
-nnz_gauss = (D_sum>30) & nnz_d;
-
-% Precompute to speed-up computation
-NK = zeros(N,N);
-for ii=1:N
-	for jj=1:N
-        if( nnz_bino(ii,jj) )
-            NK(ii,jj) = nchoosek( D_sum(jj,ii), D(ii,jj) );
-        end
-    end
-end
-
 
 % The methods tend to be more robust if starting scores are 0
 Q = fminunc( @exp_prob, zeros(N-1,1), options );
@@ -159,16 +144,15 @@ R(valid) = JOD_dist_fit(valid) -  JOD_dist_data(valid);
                             
         Dt = D';
 
-        % Compute likelihoods for N<=30 and N>30
-        p1 = NK(nnz_bino).*Pd(nnz_bino).^D(nnz_bino).*(1-Pd(nnz_bino)).^Dt(nnz_bino);
-        p2 = binopdf( D(nnz_gauss), D_sum(nnz_gauss), Pd(nnz_gauss) );
-        
+        % Note that the binomial coefficient is irrelavant for optimzation because of the
+        % log transform that we apply later
+        p = Pd(nnz_d).^D(nnz_d).*(1-Pd(nnz_d)).^Dt(nnz_d);
+
         % The prior 
         n_e = q_range+1;
-        p1_prior = max( NUA(nnz_bino), 1/n_e - abs(D(nnz_bino))/n_e.^2 );
-        p2_prior = max( NUA(nnz_gauss), 1/n_e - abs(D(nnz_gauss))/n_e.^2 );
+        p_prior = max( NUA(nnz_d), 1/n_e - abs(D(nnz_d))/n_e.^2 );
         
-        P = -sum( log( max( [p1.*p1_prior; p2.*p2_prior], 1e-200) ) );                        
+        P = -sum( log( max( p.*p_prior, 1e-200) ) );                        
     end
 
 

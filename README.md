@@ -12,6 +12,12 @@ The main features:
 
 * The code can compute confidence intervals using bootstrapping. 
 
+## Change log
+
+* 2 Feb 2017 Simplified cost function makes computation faster without alterning results 
+
+* 11 Dec 2016 Initial publicly available version
+
 ## Usage
 
 
@@ -100,27 +106,27 @@ v0.1 (14.12.2016) Internal release
 
 There is a number of papers describing the technique. When using the code, please cite [1]: 
 
-[1] M. Perez-Ortiz and R. K. Mantiuk, “A practical guide and software for analysing pairwise comparison experiments”, arXiv Stat.AP, 2017, accessible at https://arxiv.org/abs/1712.03686
+[1] M. Perez-Ortiz and R. K. Mantiuk, “A practical guide and software for analysing pairwise comparison experiments�?, arXiv Stat.AP, 2017, accessible at https://arxiv.org/abs/1712.03686
 
 The scaling method and code has been used in the following papers: 
 
-[2] K. Karaduzovic-Hadziabdic, J. H. Telalovic and R. K. Mantiuk, “Subjective and Objective Evaluation of Multi-exposure High Dynamic Range Image Deghosting Methods”, In Eurographics - Short Papers, 2016, pp. 29-32.
+[2] K. Karaduzovic-Hadziabdic, J. H. Telalovic and R. K. Mantiuk, “Subjective and Objective Evaluation of Multi-exposure High Dynamic Range Image Deghosting Methods�?, In Eurographics - Short Papers, 2016, pp. 29-32.
 
-[3] G. Eilertsen, R. K. Mantiuk and J. Unger, “Real-time noise-aware tone mapping”. ACM Transactions on Graphics, 2015, 34(6), pp. 1-15.
+[3] G. Eilertsen, R. K. Mantiuk and J. Unger, “Real-time noise-aware tone mapping�?. ACM Transactions on Graphics, 2015, 34(6), pp. 1-15.
 
-[4] P. Vangorp, R. K. Mantiuk, B. Bazyluk, K. Myszkowski, R. Mantiuk, S. J. Watt and H.-P. Seidel, “Depth from HDR: depth induction or increased realism?” In ACM Symposium on Applied Perception - SAP, 2014, pp. 71-78. ACM Press.
+[4] P. Vangorp, R. K. Mantiuk, B. Bazyluk, K. Myszkowski, R. Mantiuk, S. J. Watt and H.-P. Seidel, “Depth from HDR: depth induction or increased realism?�? In ACM Symposium on Applied Perception - SAP, 2014, pp. 71-78. ACM Press.
 
-[5] R. Wanat and R. K. Mantiuk, “Simulating and compensating changes in appearance between day and night vision”, ACM Transactions on Graphics (Proc. of SIGGRAPH), 2014, 33(4):147.
+[5] R. Wanat and R. K. Mantiuk, “Simulating and compensating changes in appearance between day and night vision�?, ACM Transactions on Graphics (Proc. of SIGGRAPH), 2014, 33(4):147.
 
-[6] M.H. Kedjar, G. Ward, H. Yoo, A. Soudi, T. Akhavan and C. Vazquez, “A Unified Color and Contrast Age-Dependent Visual Content Adaptation”, International Conference on Image Analysis and Processing ‑ ICIAP, 2017, pp. 765-778.
+[6] M.H. Kedjar, G. Ward, H. Yoo, A. Soudi, T. Akhavan and C. Vazquez, “A Unified Color and Contrast Age-Dependent Visual Content Adaptation�?, International Conference on Image Analysis and Processing ‑ ICIAP, 2017, pp. 765-778.
 
-[7] G. Eilertsen, J. Kronander, G. Denes, R.K. Mantiuk and J. Unger, “HDR image reconstruction from a single exposure using deep CNNs”, ACM Transaction on Graphics (Proc. SIGGRAPH Asia), 2017, 36(6):178.
+[7] G. Eilertsen, J. Kronander, G. Denes, R.K. Mantiuk and J. Unger, “HDR image reconstruction from a single exposure using deep CNNs�?, ACM Transaction on Graphics (Proc. SIGGRAPH Asia), 2017, 36(6):178.
 
-[8] E. Zerman, V. Hulusic, G. Valenzise, R.K. Mantiuk and F. Dufaux, “Effect of color space on high dynamic range video compression performance”, 9th International Conference on Quality of Multimedia Experience, QoMEX, 2017.
+[8] E. Zerman, V. Hulusic, G. Valenzise, R.K. Mantiuk and F. Dufaux, “Effect of color space on high dynamic range video compression performance�?, 9th International Conference on Quality of Multimedia Experience, QoMEX, 2017.
 
-[9] V.K. Adhikarla, M. Vinkler, D. Sumin, et al., “Towards a quality metric for dense light fields”, In Proceedings of Computer Vision and Pattern Recognition (CVPR), 2017, pp 58-67.
+[9] V.K. Adhikarla, M. Vinkler, D. Sumin, et al., “Towards a quality metric for dense light fields�?, In Proceedings of Computer Vision and Pattern Recognition (CVPR), 2017, pp 58-67.
 
-[10] G. Eilertsen, J. Unger and R.K. Mantiuk, “Evaluation of Tone Mapping Operators for HDR Video”, High Dynamic Range Video (book), 2016, pp. 185-207.
+[10] G. Eilertsen, J. Unger and R.K. Mantiuk, “Evaluation of Tone Mapping Operators for HDR Video�?, High Dynamic Range Video (book), 2016, pp. 185-207.
 
 A different version of the software was used in each of the above mentioned publications, which could result in small differences in the scaled results.
 
