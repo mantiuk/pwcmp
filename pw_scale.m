@@ -1,4 +1,4 @@
-function [Q, R] = pw_scale( D, use_prior )
+function [Q, R] = pw_scale( D, options )
 % Scaling method for pairwise comparisons, also for non-balanced
 % (incomplete) designs.
 %
@@ -6,8 +6,11 @@ function [Q, R] = pw_scale( D, use_prior )
 %
 % D - NxN matrix with positive integers. D(i,j) = k means that the
 %     condition i was better than j in k number of trials.
-% use_prior - Boolean indicating whether to use the proposed
-%     distance prior (1 - yes, 0 - no)
+% options - a cell array with the options. Currently recognized options:
+%	   'prior' - type of the distance prior in the available options are:
+%                'none': do not use prior, 'bounded': , 'gaussian': the
+%                normalised sum of probabilities of observing a difference 
+%                for all compared pairs of conditions. Set to 'none' by default. 
 % Q - the JOD value for each method. The difference of 1 corresponds to
 %     75% of answers selecting one condition over another.
 % R - matrix of residuals. The residuals are due to projecting the
@@ -40,9 +43,21 @@ function [Q, R] = pw_scale( D, use_prior )
 %              a conditional prior
 % 2017-09-13 - Refined the prior and code simplification
 
-if nargin<2,
-	use_prior = 1;
+if( ~exist( 'options', 'var' ) )
+    options = {};
 end
+
+opt = struct();
+
+% We don't the prior by default
+opt.prior = '';
+for kk=1:2:length(options)
+    if( ~isfield( opt, options{kk} ) )
+        error( 'Unknown option %s', options{kk} );
+    end
+    opt.(options{kk}) = options{kk+1};
+end
+ 
 
 if( size(D,1) ~= size(D,2) )
     error( 'The comparison matrix must be square' );
@@ -109,7 +124,7 @@ D_wUA(UA==1 & D==0) = 1;
 % Substract 1 from the rest of anonimous answers
 D_wUA(UA==1 & D~=0) = D_wUA(UA==1 & D~=0) - 1;
 
-f = @(x)exp_prob(x,use_prior);
+f = @(x)exp_prob(x);
 
 % The methods tend to be more robust if starting scores are 0
 Q = fminunc( f, zeros(N-1,1), options );
@@ -125,7 +140,7 @@ R = NaN( size(D) );
 valid = nnz_d & NUA;
 R(valid) = JOD_dist_fit(valid) -  JOD_dist_data(valid);
 
-    function P = exp_prob( q_trunc, use_prior )
+    function P = exp_prob( q_trunc)
         q = cat( 1, 0, q_trunc ); % Add the condition with index 1, which is fixed to 0
                         
         sigma_cdf = 1.4826; % for this sigma normal cummulative distrib is 0.75 @ 1
@@ -137,10 +152,10 @@ R(valid) = JOD_dist_fit(valid) -  JOD_dist_data(valid);
         p = prob.^D(nnz_d) .*(1-prob).^Dt(nnz_d);        
         
         % Compute prior
-        if use_prior,
+        if strcmp(opt.prior,'gaussian')
             prior = zeros(comp_made,1);
-            for zz=1:N,
-                for hh=1:N,
+            for zz=1:N
+                for hh=1:N
 
                     n = D_sum(zz,hh);
                     %If the comparison has been performed
@@ -158,6 +173,10 @@ R(valid) = JOD_dist_fit(valid) -  JOD_dist_data(valid);
             % the probability of observing a certain distance according to
             % the rest of the answers in our comparison matrix)
             
+        elseif strcmp(opt.prior,'bounded')
+            q_range = max(q)-min(q);
+            n_e = q_range+1;
+            prior = max( NUA(nnz_d), 1/n_e - abs(D(nnz_d))/n_e.^2 );
         else
             prior = ones(comp_made,1);
         end

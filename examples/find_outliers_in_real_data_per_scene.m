@@ -5,7 +5,7 @@ end
 
 bootstrap_samples = 500;
 
-D = dataset( 'File', '/home/mp867/Desktop/pairwise_cmp/2017_compression_colorspace/colorCompressionExperiment_subjectivePCdata_comma.csv', 'Delimiter', ',' );
+D = dataset( 'File', 'ex3_tmo_cmp_data.csv', 'Delimiter', ',' );
 D = D( ~strcmp( D.scene, 'peniches' ), : );
 
 SCs = unique( D.scene ); % list of scenes

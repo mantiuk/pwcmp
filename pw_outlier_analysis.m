@@ -53,7 +53,7 @@ for ss=1:length(M_list)
         MMref = reshape( sum(MMp), [N N] );
         
         %    [jod, stats] = pw_scale_bootstrp( MMp, bootstrap_samples, options );
-        jod = pw_scale( MMref,0 );
+        jod = pw_scale( MMref );
         
         % Given the posterior for all other observers, how likely is that the
         % observer "oo" result was generated from the same distribution
