@@ -87,7 +87,10 @@ N = sqrt( size(MM,2) );
 
 M = reshape( sum(MM,1), N, N );
 
-round_simulated_ties()
+
+Awew= M;
+simulate_and_round_ties()
+M
 
 [jod, R] = pw_scale( M, {'prior', opt.prior});
 Rv = abs(R(~isnan(R)));
@@ -128,7 +131,7 @@ stats.jod_low = prctile( bstat, opt.alpha*100/2 )';
 stats.jod_high = prctile( bstat, 100 - opt.alpha*100/2 )';
 stats.jod_cov = cov( bstat )';
 
-function [] = round_simulated_ties()
+function [] = simulate_and_round_ties()
     % Ties: Round the results to the smaller or larger integer (randomly) but 
     % agreeing with the number of comparisons.
     aux = triu((randi(2,[N,N])-1),1);
@@ -137,7 +140,7 @@ end
 
 function Q = boot_jod( MM_bst )    
     M = reshape( sum(MM_bst,1), N, N );
-    round_simulated_ties()
+    simulate_and_round_ties()
     Q = pw_scale( M, {'prior', opt.prior});
 end
 

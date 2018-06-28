@@ -43,11 +43,6 @@ function [Q, R] = pw_scale( D, options )
 %              a conditional prior
 % 2017-09-13 - Refined the prior and code simplification
 
-% All elements must be non-negative integers 
-if isinf(D) | ~floor(D) == D | ~all(D>=0)
-    error( 'Matrix of comparisons contains invalid inputs');
-end
-
 if( ~exist( 'options', 'var' ) )
     options = {};
 end
@@ -190,8 +185,6 @@ R(valid) = JOD_dist_fit(valid) -  JOD_dist_data(valid);
                 
             case 'none'
                 prior = ones(comp_made,1);
-            otherwise
-                error( 'Unknown prior option %s', opt.prior );
         end
         
         P = -sum( log( max( p, 1e-200)  ) + log( max( prior + 0.1, 1e-200) )  );
