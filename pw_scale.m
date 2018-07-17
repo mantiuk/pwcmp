@@ -134,6 +134,7 @@ D_wUA(UA==1 & D~=0) = D_wUA(UA==1 & D~=0) - 1;
 
 f = @(x)exp_prob(x);
 
+
 % The methods tend to be more robust if starting scores are 0
 Q = fminunc( f, zeros(N-1,1), options );
 
@@ -195,6 +196,7 @@ R(valid) = JOD_dist_fit(valid) -  JOD_dist_data(valid);
         end
         
         P = -sum( log( max( p, 1e-200)  ) + log( max( prior + 0.1, 1e-200) )  );
+
     end
 
 function node_gr = connected_comp( G, node_gr, node, group )

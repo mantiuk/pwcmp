@@ -94,7 +94,9 @@ See more examples in "examples" directory.
 
 ## Revision history
 
-v0.1 (14.12.2016) Internal release
+* 2 Feb 2017 Simplified cost function makes computation faster without alterning results 
+
+* 11 Dec 2016 Initial publicly available version
 
 ## Literature
 
@@ -121,6 +123,7 @@ The scaling method and code has been used in the following papers:
 [9] V.K. Adhikarla, M. Vinkler, D. Sumin, et al., “Towards a quality metric for dense light fields”, In Proceedings of Computer Vision and Pattern Recognition (CVPR), 2017, pp 58-67.
 
 [10] G. Eilertsen, J. Unger and R.K. Mantiuk, “Evaluation of Tone Mapping Operators for HDR Video”, High Dynamic Range Video (book), 2016, pp. 185-207.
+
 
 A different version of the software was used in each of the above mentioned publications, which could result in small differences in the scaled results.
 
