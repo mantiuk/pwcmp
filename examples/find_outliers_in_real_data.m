@@ -1,11 +1,3 @@
-% Part 1 of the ex3. The example shows how to process actual data from the
-% experiment. The data is loaded from the comma-separated file
-% 'ex3_tmo_cmp_data2.csv'. Then, the results are scaled in JOD units and
-% the result is saved in two formats: in another comma separated file and
-% in a .mat file.
-%
-% Since computing bootstrapping takes time, it is advisable to separate
-% scaling from plotting. 
 
 if( ~exist( 'pw_scale', 'file' ) )
     addpath( '../' );
@@ -23,27 +15,38 @@ N = length(C);
 
 R = []; % Store scaled results as a dataset (for the CSV file)
 Rs = cell(length(SCs),1); % and as a cell array
+all = zeros(N,N);
+    
+OBSs = unique( D.observer );
+
+all_conditions = unique( [D.condition_1] );
+
+MM = zeros(length(OBSs), N*N);
+
+n_scenes = length(SCs);
+
+conditions_scene = zeros(n_scenes,numel(all_conditions));
 
 % for each scene
-for sc=1:length(SCs)
-    
+for sc=1:n_scenes,
+     
     display( sprintf( 'Scene: %s', SCs{sc} ) );
     
     Ds = D( strcmp( D.scene, SCs{sc} ), :);
     
-    OBSs = unique( Ds.observer );
+    OBSs_scene = unique( Ds.observer );
     
-    jod = zeros( N, 1 );
-    
-    boostrap_samples = 10;
-    
-    MM = zeros(length(OBSs), N*N);
-    
-    for oo=1:length( OBSs )
+    %conditions_scene{sc} = unique([Ds.condition_1]);
         
-        Dso = Ds(strcmp( Ds.observer, OBSs{oo} ), :);
+    for oo=1:length( OBSs_scene )
+        
+        Dso = Ds(strcmp( Ds.observer, OBSs_scene{oo} ), :);
         
         M = zeros(N,N);
+                    
+        if min(Dso.selection)==1,
+            Dso.selection = Dso.selection - 1;
+        end
         
         for kk=1:length(Dso)
             
@@ -65,32 +68,16 @@ for sc=1:length(SCs)
             end
         end
         
-        MM(oo,:) = M(:);
-        
+        % find that observer (different observers can do different
+        % experiments)
+        index = find(strcmp(OBSs, OBSs_scene{oo})==1);
+        MM(index,:) = MM(index,:) + M(:)';
+        all = all + M;
     end
-    
-    tic
-    [jod, stats] = pw_scale_bootstrp( MM, bootstrap_samples, { 'use_parallel', 'never' } );
-    toc
-    
-    
-    Rn = dataset( ...
-        { repmat( { SCs{sc} }, [N 1] ), 'scene' }, { C, 'tmo' }, ...
-        { jod, 'jod' }, { stats.jod_low, 'jod_low' }, { stats.jod_high, 'jod_high' } ...
-        );
-        
-    if( ~isempty(R) )
-        R = vertcat( R, Rn );
-    else
-        R = Rn;
-    end    
-    
-    Rs{sc}.scene = SCs{sc};
-    Rs{sc}.jod = jod;
-    Rs{sc}.stats = stats;
     
 end
 
+% Any observer with a dist_L > 1.5 can be considered an outlier
+[L,dist_L] = pw_outlier_analysis( MM );
+    
 
-export( R, 'file', 'ex3_tmo_cmp_scaled.csv', 'Delimiter', ',' );
-save( 'ex3_tmo_cmp_scaled.mat', 'Rs', 'C' );

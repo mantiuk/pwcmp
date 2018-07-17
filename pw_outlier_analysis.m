@@ -1,4 +1,4 @@
-function L = pw_outlier_analysis( M_list )
+function [L,dist_L] = pw_outlier_analysis( M_list )
 % A simple outlier analysis for a pairwise comparison data
 %
 % L = pw_outlier_analysis( MM )
@@ -25,7 +25,7 @@ function L = pw_outlier_analysis( M_list )
 % The result of this analysis should be interpreted with care: small
 % differences in log-10 likelihood normally occur due to random effects.
 % Observers can be rejected only if the (negatiuve) log-likelihood is much
-% smaller then for other observers.
+% smaller than for other observers.
 %
 % Author: Rafal Mantiuk
 
@@ -63,9 +63,7 @@ for ss=1:length(M_list)
         sigma_cdf = 1.4826; % for this sigma normal cummulative distrib is 0.75 @ 1
         Dd = repmat( jod, [1 N] ) - repmat( jod', [N 1] ); % Compute the distances
         Pd = normcdf( Dd, 0, sigma_cdf ); % and probabilities
-        
-        %Dt = D';
-        
+                
         D_sum = M + M';
         
         % Compute likelihoods for N<=30 and N>30
@@ -75,18 +73,16 @@ for ss=1:length(M_list)
         sel_p = (triu(ones(size(p)),1)==1) & (D_sum>0);
         p_all = p(sel_p);
         
-        L(oo) = L(oo) + sum( log10( max( p_all, 1e-200) ) );
-                
+        L(oo) = L(oo) + sum( log( max( p_all, 1e-200) ) );
+             
     end
     
 end
 
-for oo=1:N_obs
-    sel = true(N_obs,1);
-    sel(oo) = false;
-    L_median = median(L(sel));
-    lld = log(L(oo)/L_median);
-    display( sprintf( 'Log-10 likelihood for observer %d = %g;  log-ratio difference to mean = %g', oo, L(oo), lld ) );
-end
+IR = iqr(L);
+fq = quantile(L,0.25);
+    
+% Distance to the left part of the distribution
+dist_L = ((fq - L)/IR).*(L<fq);
 
 end

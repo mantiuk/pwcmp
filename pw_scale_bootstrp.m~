@@ -132,9 +132,8 @@ function [] = round_simulated_ties()
     % In simmulation we allow ties i.e. an option of not giving preference
     % to one of two conditions results in 0.5 is assigned to both in a given
     % round. Since fractions are not allowed in the scaling, rounding is 
-    % performed. The function rounds non-integer entries of the pwc matrix 
-    % to the smaller or larger integer (randomly) but agreeing with the 
-    % number of comparisons.
+    % performed. The function rounds non results to the smaller or larger integer 
+    % (randomly) but agreeing with the number of comparisons.
     aux = triu((randi(2,[N,N])-1),1);
     M = (aux + triu(-(aux-1),1)').*round(M) + ~(aux + triu(-(aux-1),1)').*floor(M);
 end
