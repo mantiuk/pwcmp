@@ -129,8 +129,12 @@ stats.jod_high = prctile( bstat, 100 - opt.alpha*100/2 )';
 stats.jod_cov = cov( bstat )';
 
 function [] = round_simulated_ties()
-    % Ties: Round the results to the smaller or larger integer (randomly) but 
-    % agreeing with the number of comparisons.
+    % In simmulation we allow ties i.e. an option of not giving preference
+    % to one of two conditions results in 0.5 is assigned to both in a given
+    % round. Since fractions are not allowed in the scaling, rounding is 
+    % performed. The function rounds non-integer entries of the pwc matrix 
+    % to the smaller or larger integer (randomly) but agreeing with the 
+    % number of comparisons.
     aux = triu((randi(2,[N,N])-1),1);
     M = (aux + triu(-(aux-1),1)').*round(M) + ~(aux + triu(-(aux-1),1)').*floor(M);
 end

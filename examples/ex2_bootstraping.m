@@ -10,9 +10,9 @@ N = 3; % Number of compared conditions
 
 MM = zeros( N_obs, N^2 ); % We will store marices for all observers there
 
-D_mean = [ 0   1  0;
-    3  0  1;
-    0  3  0 ];
+D_mean = [ 0  1  0;
+           3  0  1;
+           0  3  0 ];
 
 % Let's generate comparison matrix for 10 observers
 for kk=1:10
