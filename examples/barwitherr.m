@@ -65,6 +65,9 @@
 %                                       as lowerErrors and upperErrors even
 %                                       if symmetric.
 %   29/10/2014  Martina F. Callaghan    Updated for 2014b graphics
+%   03/06/2018  Martina F. Callaghan    Drawnow to facilitate graphics
+%                                       update. Needed when multiple groups
+%                                       added to the same plot.
 %
 %**************************************************************************
 
@@ -122,9 +125,11 @@ if nRows > 1
         % Extract the x location data needed for the errorbar plots:
         if verLessThan('matlab', '8.4')
             % Original graphics:
+            drawnow;
             x = get(get(handles.bar(col),'children'),'xdata');
         else
             % New graphics:
+            drawnow;
             x =  handles.bar(col).XData + [handles.bar(col).XOffset];
         end
         % Use the mean x values to call the standard errorbar fn; the

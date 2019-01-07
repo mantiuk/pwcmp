@@ -44,7 +44,7 @@ function [Q, R] = pw_scale( D, options )
 % 2017-09-13 - Refined the prior and code simplification
 
 % All elements must be non-negative integers 
-if isinf(D) | ~floor(D) == D | ~all(D>=0)
+if any(isinf(D(:))) || any(floor(D(:)) ~= D(:)) || any(D(:)<0)
     error( 'Matrix of comparisons contains invalid inputs');
 end
 
