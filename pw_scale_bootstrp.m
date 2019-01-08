@@ -38,9 +38,13 @@ function [jod, stats] = pw_scale_bootstrp( MM, boostrap_samples, options )
 %      'use_parallel' - use parallel processing for bootstrapping. Possible
 %      values: 'always' (default) or 'never'.
 %	   'prior' - type of the distance prior in the available options are:
-%                'none': do not use prior, 'bounded': , 'gaussian': the
-%                normalised sum of probabilities of observing a difference 
-%                for all compared pairs of conditions. Set to 'none' by default. 
+%                'none': do not use prior;
+%                'bounded': unsurance that the distance between quality 
+%                scores is within a bounded range, adaptively selected in
+%                each iteration of the MLE optimization;
+%                'gaussian': the normalised sum of probabilities of 
+%                observing a difference for all compared pairs of conditions. 
+%                Set to 'gaussian' by default. 
 %
 % The function return:
 % jod - the JOD assigned to each condition. The firt element will be always
@@ -69,7 +73,7 @@ opt.alpha = 0.05;
 opt.use_parallel = 'always';
 
 % We do not use prior by default
-opt.prior = 'none';
+opt.prior = 'gaussian';
 for kk=1:2:length(options)
     if( ~isfield( opt, options{kk} ) )
         error( 'Unknown option %s', options{kk} );

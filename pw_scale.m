@@ -170,7 +170,7 @@ R(valid) = JOD_dist_fit(valid) -  JOD_dist_data(valid);
 
                         n = D_sum(zz,hh);
                         %If the comparison has been performed
-                        if n>0,
+                        if n>0
                             k = D_wUA(zz,hh);
                             % Compute the probability of each distance
                             % according to all our answers
