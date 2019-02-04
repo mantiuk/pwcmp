@@ -74,6 +74,7 @@ end
 % the function.
 
 %Your code goes here ....
+error( 'Code missing' );
 
 %--------------------------------------------------------------------------
 
@@ -88,6 +89,7 @@ end
 % K([1,3,4],:) = [];
 
 %Your code goes here ....
+error( 'Code missing' );
 
 
 %% Scaling with confidence intervals
@@ -98,9 +100,8 @@ end
 % function to figure out how to call it. The function can also estimate 
 % confidence intervals using bootstrapping.
 
-[jod, stats] = pw_scale_bootstrp( MM );
-
 %Your code goes here ....
+error( 'Code missing' );
 
 %% Create a table with the results
 
@@ -122,4 +123,7 @@ writetable( comp_scaled, 'compression_scaled.csv', 'Delimiter', ',' );
 % 2) add confidence intervals to the plot;
 %
 % The Matlab functions that could be useful for this task: errorbar
+%
+% What is the optimal bpp value for this image - the one that gives good
+% quality without adding much to the file size?
 
