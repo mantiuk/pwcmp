@@ -195,7 +195,7 @@ R(valid) = JOD_dist_fit(valid) -  JOD_dist_data(valid);
                 error( 'Unknown prior option %s', opt.prior );
         end
         
-        P = -sum( log( max( p, 1e-200)  ) + log( max( prior + 0.1, 1e-200) )  );
+        P = -sum( log( max( p, 1e-400)  ) + log( max( prior + 0.1, 1e-400) )  );
 
     end
 
