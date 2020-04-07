@@ -11,7 +11,7 @@ function compare_probs_observer( MM, n_obs, C )
 
 N = sqrt(size(MM,2));
 
-for oo=1:size(MM,1),
+for oo=1:size(MM,1)
     M = reshape(MM(oo,:),N,N);
     
     prob = M./(M + M');

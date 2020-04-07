@@ -8,9 +8,16 @@ function [Q, R] = pw_scale( D, options )
 %     condition i was better than j in k number of trials.
 % options - a cell array with the options. Currently recognized options:
 %	   'prior' - type of the distance prior in the available options are:
-%                'none': do not use prior, 'bounded': , 'gaussian': the
-%                normalised sum of probabilities of observing a difference 
-%                for all compared pairs of conditions. Set to 'none' by default. 
+%                'none': do not use prior;
+%                'bounded': unsurance that the distance between quality 
+%                scores is within a bounded range, adaptively selected in
+%                each iteration of the MLE optimization;
+%                'gaussian': the normalised sum of probabilities of 
+%                observing a difference for all compared pairs of conditions.
+%
+%                Set to 'bounded' by default. Bounded is faster to compute
+%                than Gaussian and was marginally worse in the simulation
+%                results.
 % Q - the JOD value for each method. The difference of 1 corresponds to
 %     75% of answers selecting one condition over another.
 % R - matrix of residuals. The residuals are due to projecting the
@@ -55,7 +62,7 @@ end
 opt = struct();
 
 % We don't the prior by default
-opt.prior = 'none';
+opt.prior = 'bounded';
 for kk=1:2:length(options)
     if( ~isfield( opt, options{kk} ) )
         error( 'Unknown option %s', options{kk} );
