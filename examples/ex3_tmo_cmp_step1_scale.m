@@ -27,7 +27,7 @@ Rs = cell(length(SCs),1); % and as a cell array
 % for each scene
 for sc=1:length(SCs)
     
-    display( sprintf( 'Scene: %s', SCs{sc} ) );
+    fprintf( 1, 'Scene: %s\n', SCs{sc} );
     
     Ds = D( strcmp( D.scene, SCs{sc} ), :);
     

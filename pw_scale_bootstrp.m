@@ -32,11 +32,12 @@ function [jod, stats] = pw_scale_bootstrp( MM, boostrap_samples, options )
 %
 % options - a cell array with the options. Currently recognized options:
 %      'display' - set to 'none' for quite operation, and 'info' to show
-%      some extra information. 'info' is the default option.
+%                some extra information. 'info' is the default option.
 %      'alpha' - the 'alpha' value for condidence interval. Default value
-%      of 0.05 results in 95% confidence intervals.
+%                of 0.05 results in 95% confidence intervals.
 %      'use_parallel' - use parallel processing for bootstrapping. Possible
-%      values: 'always' (default) or 'never'.
+%                values: 'always' (default) or 'never'.
+%
 %	   'prior' - type of the distance prior in the available options are:
 %                'none': do not use prior;
 %                'bounded': unsurance that the distance between quality 
@@ -49,6 +50,22 @@ function [jod, stats] = pw_scale_bootstrp( MM, boostrap_samples, options )
 %                than Gaussian and was marginally worse in the simulation
 %                results.
 %      
+%      'regularization' - Since the quality scores in pairwise comparisons
+%                are relative and the absolute value cannot be obtained, it
+%                is necessary to make an assumption how the absolute values
+%                are fixed in the optimization. The two options are:
+%
+%                'mean0' - add a regularization term that makes the mean
+%                JOD value equal to 0. 
+%                'fix0' - fix the score of the first condition to 0. That
+%                score is not optimized. 
+%
+%                The default is 'mean0'. 'mean0' results in a reduced
+%                overall estimation error as compared to 'fix0'. 'fix0' is 
+%                useful when one of the conditions is considered a
+%                baseline or a reference. The conditioons closer to that
+%                reference will be estimated with higher accuracy. 
+%
 %
 % The function return:
 % jod - the JOD assigned to each condition. The firt element will be always
@@ -75,9 +92,9 @@ opt = struct();
 opt.display = 'info';
 opt.alpha = 0.05;
 opt.use_parallel = 'always';
-
-% We do not use prior by default
+opt.regularization='mean0';
 opt.prior = 'bounded';
+
 for kk=1:2:length(options)
     if( ~isfield( opt, options{kk} ) )
         error( 'Unknown option %s', options{kk} );
@@ -97,7 +114,7 @@ M = reshape( sum(MM,1), N, N );
 
 round_simulated_ties()
 
-[jod, R] = pw_scale( M, {'prior', opt.prior});
+[jod, R] = pw_scale( M, {'prior', opt.prior, 'regularization', opt.regularization});
 Rv = abs(R(~isnan(R)));
 if( opt.display_level > 0 )
     display( sprintf( 'Residual due to scaling: mean = %g; min = %g; max = %g', mean(Rv), min(Rv), nanmax(Rv) ) );

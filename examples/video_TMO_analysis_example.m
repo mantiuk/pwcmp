@@ -93,8 +93,7 @@ compare_probs_observer( MM, outliers, C )
     
 %exportfig( gcf, [ 'outliers_boxplot.eps' ], 'Color', 'rgb' );
 
-[jod, stats] = pw_scale_bootstrp( MM, bootstrap_samples );
-%[jod, stats] = pw_scale_bootstrp( MM, bootstrap_samples, { 'use_parallel', 'never' } );
+[jod, stats] = pw_scale_bootstrp( MM, bootstrap_samples, { 'regularization', 'mean0' } );
 
 jod_offset = 1 - min(jod);
 jod = jod + jod_offset;

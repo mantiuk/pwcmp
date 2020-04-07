@@ -31,5 +31,6 @@ eb_low = Q - stats.jod_low;
 
 errorbar( 1:N, Q, eb_low, eb_high );
 
+xlim( [0.9 3.1] );
 
 
