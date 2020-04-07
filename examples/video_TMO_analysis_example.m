@@ -28,9 +28,9 @@ MM = zeros(length(OBSs), N*N);
 n_scenes = length(SCs);
 
 % for each scene
-for sc=1:n_scenes,
+for sc=1:n_scenes
      
-    display( sprintf( 'Scene: %s', SCs{sc} ) );
+    fprintf( 1, 'Scene: %s\n', SCs{sc} );
     
     Ds = D( strcmp( D.scene, SCs{sc} ), :);
     
@@ -43,7 +43,7 @@ for sc=1:n_scenes,
         
         M = zeros(N,N);
                     
-        if min(Dso.selection)==1,
+        if min(Dso.selection)==1
             Dso.selection = Dso.selection - 1;
         end
         
@@ -93,17 +93,17 @@ compare_probs_observer( MM, outliers, C )
     
 %exportfig( gcf, [ 'outliers_boxplot.eps' ], 'Color', 'rgb' );
 
-[jod, stats] = pw_scale_bootstrp( MM, bootstrap_samples, { 'use_parallel', 'never' } );
-error_bars = zeros(N, 2);
+[jod, stats] = pw_scale_bootstrp( MM, bootstrap_samples );
+%[jod, stats] = pw_scale_bootstrp( MM, bootstrap_samples, { 'use_parallel', 'never' } );
+
 jod_offset = 1 - min(jod);
 jod = jod + jod_offset;
 stats.jod_high = stats.jod_high + jod_offset;
 stats.jod_low = stats.jod_low + jod_offset;
 
-for ll=1:length(C)
-        error_bars(ll,1) = stats.jod_high( ll )-jod( ll );
-        error_bars(ll,2) = jod( ll )-stats.jod_low( ll );
-end
+error_bars = zeros(N, 2);
+error_bars(:,1) = jod'-stats.jod_low';
+error_bars(:,2) = stats.jod_high'-jod';
 
 %html_change_figure_print_size( gcf, 22, 8 );
 figure;
@@ -123,6 +123,3 @@ pw_plot_ranking_triangles( jod, stats, C )
 hold off;
 
 %exportfig( gcf, [ 'triangles.eps' ], 'Color', 'rgb' );
-
-
-
