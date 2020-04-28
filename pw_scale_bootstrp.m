@@ -117,7 +117,7 @@ round_simulated_ties()
 [jod, R] = pw_scale( M, {'prior', opt.prior, 'regularization', opt.regularization});
 Rv = abs(R(~isnan(R)));
 if( opt.display_level > 0 )
-    display( sprintf( 'Residual due to scaling: mean = %g; min = %g; max = %g', mean(Rv), min(Rv), nanmax(Rv) ) );
+    fprintf( 1, 'Residual due to scaling: mean = %g; min = %g; max = %g\n', mean(Rv), min(Rv), nanmax(Rv) );
 end
 
 stats = struct();
@@ -130,7 +130,7 @@ if( boostrap_samples == 1 || size(MM,1) < 2 )
 end
 
 if( opt.display_level > 0 )
-    display( sprintf( 'Generating %d bootstrap samples. It can take a while', boostrap_samples ) );
+    fprintf( 1, 'Generating %d bootstrap samples. It can take a while...\n', boostrap_samples );
 end
 
 % Use if parallel proc toolbox available
@@ -146,7 +146,7 @@ for kk=2:size(bstat,1)
     H_p = H_p + kstest( bstat(kk,:) );
 end
 if( opt.display_level > 0 )
-    display( sprintf( '%d out of %d JOD-points have a standard normal distribution (Kolmogorov-Smirnov test)', H_p, size(bstat,2)-1 ) );
+    fprintf( 1, '%d out of %d JOD-points have a standard normal distribution (Kolmogorov-Smirnov test)\n', H_p, size(bstat,2)-1 );
 end
 
 stats.jod_low = prctile( bstat, opt.alpha*100/2 )';
@@ -167,7 +167,7 @@ end
 function Q = boot_jod( MM_bst )    
     M = reshape( sum(MM_bst,1), N, N );
     round_simulated_ties()
-    Q = pw_scale( M, {'prior', opt.prior});
+    Q = pw_scale( M, {'prior', opt.prior, 'regularization', opt.regularization} );
 end
 
 

@@ -89,8 +89,8 @@ for kk=1:2:length(options)
     
     switch options{kk}
         case 'prior'
-            if ~ismember( options{kk+1}, { 'none', 'bounded', 'gassian' } )
-                error( 'The "prior" option must be "none", "bounded", or "gassian"' );
+            if ~ismember( options{kk+1}, { 'none', 'bounded', 'gaussian' } )
+                error( 'The "prior" option must be "none", "bounded", or "gaussian"' );
             end
         case 'regularization'
             if ~ismember( options{kk+1}, { 'mean0', 'fix0' } )
