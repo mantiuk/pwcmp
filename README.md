@@ -64,7 +64,7 @@ The function expects the same matrix of comparison per observer `M` as the outli
 
 The cell-array `options` allows to select the type of prior, regularization, set the confidence level, and display options. Refer to the documentation of the function for details. The two most relevant options are:
 
-* `prior` - The prior that ensures that the distance between pairs of conditions is finite. It helps reduce the estimation error when the number of measurements is low. The default option is to use `gaussian` prior, which is slower but more accurate than the `bounded` prior. Use `bounded` when scaling (or bootstrapping) takes too much time. Set to `none` to disable prior. 
+* `prior` - The prior that ensures that the distance between pairs of conditions is finite. It helps to reduce the estimation error when the number of measurements is low. The default option is to use the `gaussian` prior, which is slower but more accurate than the `bounded` prior. Use `bounded` when scaling (or bootstrapping) takes too much time. Set to `none` to disable prior. 
 
 * `regularization` - Since the quality scores in pairwise comparisons are relative and the absolute value cannot be determined, it is necessary to make an assumption how the absolute values are fixed in the optimization. The two options are  `mean0` (default) that makes mean JOD value equal to 0 and `fix0` which fixes the score of the first condition to 0. `mean0` results in a reduced overall estimation error as compared to `fix0`. However, `fix0` can be used to ensure that the estimation error is the smallest near the first condition. 
 
@@ -104,7 +104,7 @@ See more examples in "examples" directory.
 
 * 11 Dec 2016 Initial publicly available version
 
-* 29 Apr 2020 Added `regularization` options: `mean0` and `fix0`
+* 29 Apr 2020 Added `regularization` options: `mean0` and `fix0`. Cleaned up `ex4_lf.m`. 
 
 ## Literature
 
@@ -131,6 +131,18 @@ The scaling method and code has been used in the following papers:
 [9] V.K. Adhikarla, M. Vinkler, D. Sumin, et al., “Towards a quality metric for dense light fields”, In Proceedings of Computer Vision and Pattern Recognition (CVPR), 2017, pp 58-67.
 
 [10] G. Eilertsen, J. Unger and R.K. Mantiuk, “Evaluation of Tone Mapping Operators for HDR Video”, High Dynamic Range Video (book), 2016, pp. 185-207.
+
+[11] Chubarau, A., Akhavan, T., Yoo, H., Mantiuk, R. K., & Clark, J. (2020). Perceptual Image Quality Assessment for Various Viewing Conditions and Display Systems. Human Vision and Electronic Imaging.
+
+[12] Zhong, F., Koulieris, G. A., Drettakis, G., Banks, M. S., Chambe, M., Durand, F., & Mantiuk, R. K. (2019). DiCE: Dichoptic Contrast Enhancement for VR and Stereo Displays. ACM Transactions on Graphics (TOG), 38(6), 1–13. https://doi.org/10.1145/3355089.3356552
+
+[13] Denes, G., Maruszczyk, K., Ash, G., & Mantiuk, R. K. (2019). Temporal Resolution Multiplexing: Exploiting the limitations of spatio-temporal vision for more efficient VR rendering. IEEE Transactions on Visualization and Computer Graphics, 25(5), 2072–2082. https://doi.org/10.1109/TVCG.2019.2898741
+
+[14] Perez-Ortiz, M., Mikhailiuk, A., Zerman, E., Hulusic, V., Valenzise, G., & Mantiuk, R. K. (2019). From pairwise comparisons and rating to a unified quality scale. IEEE Transactions on Image Processing, 1–1. https://doi.org/10.1109/tip.2019.2936103
+
+[15] Mikhailiuk, A., Pérez-Ortiz, M., & Mantiuk, R. K. (2018). Psychometric scaling of TID2013 dataset. International Conference on Quiality of Multimedia Experience (QoMEX). https://doi.org/10.1109/QoMEX.2018.8463376
+
+[16] Adams, W. J., Kucukoglu, G., Landy, M. S., & Mantiuk, R. K. (2018). Naturally glossy: Gloss perception, illumination statistics, and tone mapping. Journal of Vision, 18(13), 4. https://doi.org/10.1167/18.13.4
 
 
 A different version of the software was used in each of the above mentioned publications, which could result in small differences in the scaled results.
