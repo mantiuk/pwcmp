@@ -32,11 +32,12 @@ function [jod, stats] = pw_scale_bootstrp( MM, boostrap_samples, options )
 %
 % options - a cell array with the options. Currently recognized options:
 %      'display' - set to 'none' for quite operation, and 'info' to show
-%      some extra information. 'info' is the default option.
+%                some extra information. 'info' is the default option.
 %      'alpha' - the 'alpha' value for condidence interval. Default value
-%      of 0.05 results in 95% confidence intervals.
+%                of 0.05 results in 95% confidence intervals.
 %      'use_parallel' - use parallel processing for bootstrapping. Possible
-%      values: 'always' (default) or 'never'.
+%                values: 'always' (default) or 'never'.
+%
 %	   'prior' - type of the distance prior in the available options are:
 %                'none': do not use prior;
 %                'bounded': unsurance that the distance between quality 
@@ -45,10 +46,26 @@ function [jod, stats] = pw_scale_bootstrp( MM, boostrap_samples, options )
 %                'gaussian': the normalised sum of probabilities of 
 %                observing a difference for all compared pairs of conditions.
 %
-%                Set to 'bounded' by default. Bounded is faster to compute
-%                than Gaussian and was marginally worse in the simulation
+%                Set to 'gaussian' by default. Bounded is faster to compute
+%                than Gaussian but is also marginally worse in the simulation
 %                results.
 %      
+%      'regularization' - Since the quality scores in pairwise comparisons
+%                are relative and the absolute value cannot be obtained, it
+%                is necessary to make an assumption how the absolute values
+%                are fixed in the optimization. The two options are:
+%
+%                'mean0' - add a regularization term that makes the mean
+%                JOD value equal to 0. 
+%                'fix0' - fix the score of the first condition to 0. That
+%                score is not optimized. 
+%
+%                The default is 'mean0'. 'mean0' results in a reduced
+%                overall estimation error as compared to 'fix0'. 'fix0' is 
+%                useful when one of the conditions is considered a
+%                baseline or a reference. The conditioons closer to that
+%                reference will be estimated with higher accuracy. 
+%
 %
 % The function return:
 % jod - the JOD assigned to each condition. The firt element will be always
@@ -75,9 +92,9 @@ opt = struct();
 opt.display = 'info';
 opt.alpha = 0.05;
 opt.use_parallel = 'always';
+opt.regularization='mean0';
+opt.prior = 'gaussian';
 
-% We do not use prior by default
-opt.prior = 'bounded';
 for kk=1:2:length(options)
     if( ~isfield( opt, options{kk} ) )
         error( 'Unknown option %s', options{kk} );
@@ -97,10 +114,10 @@ M = reshape( sum(MM,1), N, N );
 
 round_simulated_ties()
 
-[jod, R] = pw_scale( M, {'prior', opt.prior});
+[jod, R] = pw_scale( M, {'prior', opt.prior, 'regularization', opt.regularization});
 Rv = abs(R(~isnan(R)));
 if( opt.display_level > 0 )
-    display( sprintf( 'Residual due to scaling: mean = %g; min = %g; max = %g', mean(Rv), min(Rv), nanmax(Rv) ) );
+    fprintf( 1, 'Residual due to scaling: mean = %g; min = %g; max = %g\n', mean(Rv), min(Rv), nanmax(Rv) );
 end
 
 stats = struct();
@@ -113,7 +130,7 @@ if( boostrap_samples == 1 || size(MM,1) < 2 )
 end
 
 if( opt.display_level > 0 )
-    display( sprintf( 'Generating %d bootstrap samples. It can take a while', boostrap_samples ) );
+    fprintf( 1, 'Generating %d bootstrap samples. It can take a while...\n', boostrap_samples );
 end
 
 % Use if parallel proc toolbox available
@@ -129,7 +146,7 @@ for kk=2:size(bstat,1)
     H_p = H_p + kstest( bstat(kk,:) );
 end
 if( opt.display_level > 0 )
-    display( sprintf( '%d out of %d JOD-points have a standard normal distribution (Kolmogorov-Smirnov test)', H_p, size(bstat,2)-1 ) );
+    fprintf( 1, '%d out of %d JOD-points have a standard normal distribution (Kolmogorov-Smirnov test)\n', H_p, size(bstat,2)-1 );
 end
 
 stats.jod_low = prctile( bstat, opt.alpha*100/2 )';
@@ -150,7 +167,7 @@ end
 function Q = boot_jod( MM_bst )    
     M = reshape( sum(MM_bst,1), N, N );
     round_simulated_ties()
-    Q = pw_scale( M, {'prior', opt.prior});
+    Q = pw_scale( M, {'prior', opt.prior, 'regularization', opt.regularization} );
 end
 
 

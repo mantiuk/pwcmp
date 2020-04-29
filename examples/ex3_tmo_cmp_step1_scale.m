@@ -27,7 +27,7 @@ Rs = cell(length(SCs),1); % and as a cell array
 % for each scene
 for sc=1:length(SCs)
     
-    display( sprintf( 'Scene: %s', SCs{sc} ) );
+    fprintf( 1, 'Scene: %s\n', SCs{sc} );
     
     Ds = D( strcmp( D.scene, SCs{sc} ), :);
     
@@ -70,7 +70,7 @@ for sc=1:length(SCs)
     end
     
     tic
-    [jod, stats] = pw_scale_bootstrp( MM, bootstrap_samples, { 'use_parallel', 'never' } );
+    [jod, stats] = pw_scale_bootstrp( MM, bootstrap_samples, { 'prior', 'bounded' } );
     toc
     
     

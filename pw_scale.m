@@ -8,6 +8,7 @@ function [Q, R] = pw_scale( D, options )
 %     condition i was better than j in k number of trials.
 % options - a cell array with the options. Currently recognized options:
 %	   'prior' - type of the distance prior in the available options are:
+%
 %                'none': do not use prior;
 %                'bounded': unsurance that the distance between quality 
 %                scores is within a bounded range, adaptively selected in
@@ -15,9 +16,26 @@ function [Q, R] = pw_scale( D, options )
 %                'gaussian': the normalised sum of probabilities of 
 %                observing a difference for all compared pairs of conditions.
 %
-%                Set to 'bounded' by default. Bounded is faster to compute
-%                than Gaussian and was marginally worse in the simulation
+%                Set to 'gaussian' by default. Bounded is faster to compute
+%                than Gaussian but is also marginally worse in the simulation
 %                results.
+%
+%       'regularization' - Since the quality scores in pairwise comparisons
+%                are relative and the absolute value cannot be obtained, it
+%                is necessary to make an assumption how the absolute values
+%                are fixed in the optimization. The two options are:
+%
+%                'mean0' - add a regularization term that makes the mean
+%                JOD value equal to 0. 
+%                'fix0' - fix the score of the first condition to 0. That
+%                score is not optimized. 
+%
+%                The default is 'mean0'. 'mean0' results in a reduced
+%                overall estimation error as compared to 'fix0'. 'fix0' is 
+%                useful when one of the conditions is considered a
+%                baseline or a reference. The conditioons closer to that
+%                reference will be estimated with higher accuracy. 
+%
 % Q - the JOD value for each method. The difference of 1 corresponds to
 %     75% of answers selecting one condition over another.
 % R - matrix of residuals. The residuals are due to projecting the
@@ -62,12 +80,26 @@ end
 opt = struct();
 
 % We don't the prior by default
-opt.prior = 'bounded';
+opt.prior = 'gaussian';
+opt.regularization='mean0';
 for kk=1:2:length(options)
     if( ~isfield( opt, options{kk} ) )
         error( 'Unknown option %s', options{kk} );
     end
+    
+    switch options{kk}
+        case 'prior'
+            if ~ismember( options{kk+1}, { 'none', 'bounded', 'gaussian' } )
+                error( 'The "prior" option must be "none", "bounded", or "gaussian"' );
+            end
+        case 'regularization'
+            if ~ismember( options{kk+1}, { 'mean0', 'fix0' } )
+                error( 'The "regularization" option must be "mean0" or "fix0"' );
+            end
+    end
+    
     opt.(options{kk}) = options{kk+1};
+    
 end
  
 
@@ -142,11 +174,20 @@ D_wUA(UA==1 & D~=0) = D_wUA(UA==1 & D~=0) - 1;
 f = @(x)exp_prob(x);
 
 
-% The methods tend to be more robust if starting scores are 0
-Q = fminunc( f, zeros(N-1,1), options );
+if strcmp( opt.regularization, 'mean0' )
+    % The methods tend to be more robust if starting scores are 0
+    Q_0 = zeros(N,1);
+else
+    Q_0 = zeros(N-1,1);
+end
 
-% Add missing leading 0-score for the first condition (not optimized)
-Q = cat( 1, 0, Q );
+
+Q = fminunc( f, Q_0, options );
+
+if ~strcmp( opt.regularization, 'mean0' )
+    % Add missing leading 0-score for the first condition (not optimized)
+    Q = cat( 1, 0, Q );
+end
 
 % Calculate the matrix of residuals
 JOD_dist_fit = repmat( Q, [1 N] ) - repmat( Q', [N 1] ); % Compute the distances
@@ -156,8 +197,12 @@ R = NaN( size(D) );
 valid = nnz_d & NUA;
 R(valid) = JOD_dist_fit(valid) -  JOD_dist_data(valid);
 
-    function P = exp_prob( q_trunc)
-        q = cat( 1, 0, q_trunc ); % Add the condition with index 1, which is fixed to 0
+    function P = exp_prob( q_trunc )
+        if strcmp( opt.regularization, 'mean0' )
+            q = q_trunc;
+        else
+            q = cat( 1, 0, q_trunc ); % Add the condition with index 1, which is fixed to 0
+        end
                         
         sigma_cdf = 1.4826; % for this sigma normal cummulative distrib is 0.75 @ 1
         Dd = repmat( q, [1 N] ) - repmat( q', [N 1] ); % Compute the distances
@@ -166,6 +211,11 @@ R(valid) = JOD_dist_fit(valid) -  JOD_dist_data(valid);
         % Compute likelihoods
         prob = Pd(nnz_d);
         p = prob.^D(nnz_d) .*(1-prob).^Dt(nnz_d);        
+
+        L_reg = 0; % regularization loss term
+        if strcmp( opt.regularization, 'mean0' )
+            L_reg = 0.01 * sum(mean(q).^2);
+        end 
         
         % Compute prior
         switch opt.prior
@@ -202,7 +252,9 @@ R(valid) = JOD_dist_fit(valid) -  JOD_dist_data(valid);
                 error( 'Unknown prior option %s', opt.prior );
         end
         
-        P = -sum( log( max( p, 1e-400)  ) + log( max( prior + 0.1, 1e-400) )  );
+        P = -sum( log( max( p, 1e-400)  ) + ...
+            log( max( prior + 0.1, 1e-400) ) ) + ...
+            L_reg;
 
     end
 
