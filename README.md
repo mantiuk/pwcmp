@@ -47,7 +47,7 @@ To compare the answers of the indicated observer (observer number n_obs) to the 
 
 ```
 
-compare_probs_observer(M,n_obs)
+compare_probs_observer(M, n_obs)
 
 ```
 
@@ -56,11 +56,17 @@ which plots the probabilities of selecting one condition over all others. Note t
 Once we are confident there are no outliers in the dataset, we can scale the results and compute confidence intervals using
 ```
 
-[jod, stats]=pw_scale_bootstrp(M)
+[jod, stats]=pw_scale_bootstrp(M, boostrap_samples, options)
 
 ```
 
-The function expects the same matrix of comparison per observer M as the outlier analysis and returns the scaling solution and a set of statistics. Confidence intervals represent the range in which the estimated quality values lie with 95\% confidence. The confidence intervals, however, should not be used to infer statistical significance of the difference. 
+The function expects the same matrix of comparison per observer `M` as the outlier analysis and returns the scaling solution and a set of statistics. Confidence intervals represent the range in which the estimated quality values lie with 95\% confidence. The confidence intervals, however, should not be used to infer statistical significance of the difference. Use at least 500-1000 `bootstrap_samples` to obtain accurate confidence intervals. As bootstrapping takes time, you can pass 0 for `bootstrap_samples` to disable computation of confidence intervals. 
+
+The cell-array `options` allows to select the type of prior, regularization, set the confidence level, and display options. Refer to the documentation of the function for details. The two most relevant options are:
+
+* `prior` - The prior that ensures that the distance between pairs of conditions is finite. It helps reduce the estimation error when the number of measurements is low. The default option is to use `gaussian` prior, which is slower but more accurate than the `bounded` prior. Use `bounded` when scaling (or bootstrapping) takes too much time. Set to `none` to disable prior. 
+
+* `regularization` - Since the quality scores in pairwise comparisons are relative and the absolute value cannot be determined, it is necessary to make an assumption how the absolute values are fixed in the optimization. The two options are  `mean0` (default) that makes mean JOD value equal to 0 and `fix0` which fixes the score of the first condition to 0. `mean0` results in a reduced overall estimation error as compared to `fix0`. However, `fix0` can be used to ensure that the estimation error is the smallest near the first condition. 
 
 Statistical tests can be performed using the function 
 
@@ -97,6 +103,8 @@ See more examples in "examples" directory.
 * 2 Feb 2017 Simplified cost function makes computation faster without alterning results 
 
 * 11 Dec 2016 Initial publicly available version
+
+* 29 Apr 2020 Added `regularization` options: `mean0` and `fix0`
 
 ## Literature
 

@@ -70,7 +70,7 @@ for sc=1:length(SCs)
     end
     
     tic
-    [jod, stats] = pw_scale_bootstrp( MM, bootstrap_samples, { 'use_parallel', 'never' } );
+    [jod, stats] = pw_scale_bootstrp( MM, bootstrap_samples, { 'prior', 'bounded' } );
     toc
     
     

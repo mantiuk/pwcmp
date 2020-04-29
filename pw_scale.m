@@ -16,8 +16,8 @@ function [Q, R] = pw_scale( D, options )
 %                'gaussian': the normalised sum of probabilities of 
 %                observing a difference for all compared pairs of conditions.
 %
-%                Set to 'bounded' by default. Bounded is faster to compute
-%                than Gaussian and was marginally worse in the simulation
+%                Set to 'gaussian' by default. Bounded is faster to compute
+%                than Gaussian but is also marginally worse in the simulation
 %                results.
 %
 %       'regularization' - Since the quality scores in pairwise comparisons
@@ -80,7 +80,7 @@ end
 opt = struct();
 
 % We don't the prior by default
-opt.prior = 'bounded';
+opt.prior = 'gaussian';
 opt.regularization='mean0';
 for kk=1:2:length(options)
     if( ~isfield( opt, options{kk} ) )

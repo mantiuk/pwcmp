@@ -46,8 +46,8 @@ function [jod, stats] = pw_scale_bootstrp( MM, boostrap_samples, options )
 %                'gaussian': the normalised sum of probabilities of 
 %                observing a difference for all compared pairs of conditions.
 %
-%                Set to 'bounded' by default. Bounded is faster to compute
-%                than Gaussian and was marginally worse in the simulation
+%                Set to 'gaussian' by default. Bounded is faster to compute
+%                than Gaussian but is also marginally worse in the simulation
 %                results.
 %      
 %      'regularization' - Since the quality scores in pairwise comparisons
@@ -93,7 +93,7 @@ opt.display = 'info';
 opt.alpha = 0.05;
 opt.use_parallel = 'always';
 opt.regularization='mean0';
-opt.prior = 'bounded';
+opt.prior = 'gaussian';
 
 for kk=1:2:length(options)
     if( ~isfield( opt, options{kk} ) )
