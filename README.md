@@ -97,6 +97,10 @@ display( Q )
 
 See more examples in "examples" directory.
 
+## Related projects
+
+* [ASAP: Active Sampling for Pairwise Comparisons](https://github.com/gfxdisp/asap) - an effective method for reducing the number of required pairwise comparisons. 
+
 ## Revision history
 
 * 2 Feb 2017 Simplified cost function makes computation faster without alterning results 
@@ -113,7 +117,7 @@ There is a number of papers describing the technique. When using the code, pleas
 
 [1] M. Perez-Ortiz and R. K. Mantiuk, “A practical guide and software for analysing pairwise comparison experiments”, arXiv Stat.AP, 2017, accessible at https://arxiv.org/abs/1712.03686
 
-The scaling method and code has been used in the following papers: 
+The scaling method and code has been used in the following papers (and many more): 
 
 [2] K. Karaduzovic-Hadziabdic, J. H. Telalovic and R. K. Mantiuk, “Subjective and Objective Evaluation of Multi-exposure High Dynamic Range Image Deghosting Methods”, In Eurographics - Short Papers, 2016, pp. 29-32.
 
@@ -145,6 +149,9 @@ The scaling method and code has been used in the following papers:
 
 [16] Adams, W. J., Kucukoglu, G., Landy, M. S., & Mantiuk, R. K. (2018). Naturally glossy: Gloss perception, illumination statistics, and tone mapping. Journal of Vision, 18(13), 4. https://doi.org/10.1167/18.13.4
 
+[17] Mantiuk, Rafał K., Gyorgy Denes, Alexandre Chapiro, Anton Kaplanyan, Gizem Rufo, Romain Bachy, Trisha Lian, and Anjul Patney. “FovVideoVDP : A Visible Difference Predictor for Wide Field-of-View Video.” ACM Transaction on Graphics 40, no. 4 (2021): 49. https://doi.org/10.1145/3450626.3459831.
+
+[18] Hanji, Param, Rafał K. Mantiuk, Gabriel Eilertsen, Saghi Hajisharif, and Jonas Unger. “Comparison of Single Image HDR Reconstruction Methods — the Caveats of Quality Assessment.” In SIGGRAPH ’22 Conference Proceedings. Association for Computing Machinery, 2022. https://doi.org/10.1145/3528233.3530729.
 
 A different version of the software was used in each of the above mentioned publications, which could result in small differences in the scaled results.
 
