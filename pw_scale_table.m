@@ -24,7 +24,11 @@ end
 % observer_col - the name of the column storing the ids of the observers
 % selection_col - the name of the variable indicating whether the first
 %             condition was selected. The values must be 0 or 1
-% 
+% optional arguments:
+% bootstrap_samples - see 'bootstrap_samples' in pw_scale_bootstrp
+% prior - see 'prior' in pw_scale_bootstrp
+% do_all - in addition to the per-group scaling, scale all results across
+%        all the groups
 
 GRs = unique( T.(group_col) ); % list of groups
 C = unique( cat( 1, T.(condition_cols{1}), T.(condition_cols{2}) ) ); % all conditions
