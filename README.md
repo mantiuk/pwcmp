@@ -14,7 +14,6 @@ The main features:
 
 ## Usage
 
-
 The code for this example can be found in the "examples" folder, under the name of video_TMO_analysis_example, in which we analyse the data from a video tone mapping evaluation project.
 
 We recommend to keep the data in a tabulated format, such as comma-separated-files (CSV), in which each condition is described by meaningful labels. Such files are easy to read with any software and can be easily interpreted even long after the data have been collected. The following table shows a few rows from the analysed dataset.
@@ -105,6 +104,8 @@ See more examples in "examples" directory.
 * 11 Dec 2016 Initial publicly available version
 
 * 29 Apr 2020 Added `regularization` options: `mean0` and `fix0`. Cleaned up `ex4_lf.m`. 
+
+* 16 Sep 2022 Added `pw_scale_table()` fuction. Fixed issues with Kolmogorov-Smirnov test.
 
 ## Literature
 

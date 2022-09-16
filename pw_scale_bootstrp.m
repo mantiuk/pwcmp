@@ -78,6 +78,9 @@ function [jod, stats] = pw_scale_bootstrp( MM, boostrap_samples, options )
 %      of the bar on the error plot should be jod - stats.jod_low.
 % stats.jod_cov - the covariance matrix for the jod scores. It could be
 %      used for statistical testing significant differences.
+% stats.bstrp - the complete set of bootstrap samples as a [B,C] matrix,
+%      where B is the number of bootstrat samples and C is the number of
+%      conditions
 
 
 if( ~exist( 'boostrap_samples', 'var' ) || boostrap_samples==0 )
@@ -142,11 +145,13 @@ stats.bstrp = bstat;
 
 % Test if each JOD-scaled point belongs to standard distribution
 H_p = 0;
-for kk=2:size(bstat,1)
-    H_p = H_p + kstest( bstat(kk,:) );
+for kk=1:size(bstat,2)
+    xb = bstat(:,kk);
+    x = (xb-mean(xb))/std(xb);
+    H_p = H_p + (1-kstest( x ));
 end
 if( opt.display_level > 0 )
-    fprintf( 1, '%d out of %d JOD-points have a standard normal distribution (Kolmogorov-Smirnov test)\n', H_p, size(bstat,2)-1 );
+    fprintf( 1, '%d out of %d JOD-points have a standard normal distribution (Kolmogorov-Smirnov test)\n', H_p, size(bstat,2) );
 end
 
 stats.jod_low = prctile( bstat, opt.alpha*100/2 )';
