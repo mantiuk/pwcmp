@@ -171,9 +171,6 @@ D_wUA(UA==1 & D==0) = 1;
 % Substract 1 from the rest of anonimous answers
 D_wUA(UA==1 & D~=0) = D_wUA(UA==1 & D~=0) - 1;
 
-f = @(x)exp_prob(x);
-
-
 if strcmp( opt.regularization, 'mean0' )
     % The methods tend to be more robust if starting scores are 0
     Q_0 = zeros(N,1);
@@ -181,8 +178,8 @@ else
     Q_0 = zeros(N-1,1);
 end
 
-
-Q = fminunc( f, Q_0, options );
+options = optimoptions('fminunc','SpecifyObjectiveGradient',true,'CheckGradients',false, 'Display', 'off');
+Q = fminunc( @exp_prob_grad, Q_0, options );
 
 if ~strcmp( opt.regularization, 'mean0' )
     % Add missing leading 0-score for the first condition (not optimized)
@@ -197,7 +194,7 @@ R = NaN( size(D) );
 valid = nnz_d & NUA;
 R(valid) = JOD_dist_fit(valid) -  JOD_dist_data(valid);
 
-    function P = exp_prob( q_trunc )
+    function [P, grad] = exp_prob_grad( q_trunc )
         if strcmp( opt.regularization, 'mean0' )
             q = q_trunc;
         else
@@ -206,37 +203,57 @@ R(valid) = JOD_dist_fit(valid) -  JOD_dist_data(valid);
                         
         sigma_cdf = 1.4826; % for this sigma normal cummulative distrib is 0.75 @ 1
         Dd = repmat( q, [1 N] ) - repmat( q', [N 1] ); % Compute the distances
-        Pd = normcdf( Dd, 0, sigma_cdf ); % and probabilities  
+        
+        % early slicing to save memory
+        Dd = Dd(nnz_d);
+        [row, col] = find(nnz_d);
+        dDd_dq = zeros(comp_made, N);
+
+        dDd_dq(sub2ind(size(dDd_dq), (1:comp_made)', row)) = 1;
+        coller = sub2ind(size(dDd_dq), (1:comp_made)', col);
+        dDd_dq(coller) = dDd_dq(coller) - 1;
+
+        Pd = normcdf( Dd, 0, sigma_cdf ); % and probabilities
 
         % Compute likelihoods
-        prob = Pd(nnz_d);
-        p = prob.^D(nnz_d) .*(1-prob).^Dt(nnz_d);        
+
+        prob = Pd;
+        Dn = D(nnz_d);
+        Dtn = Dt(nnz_d);
+        dprob_dq = normpdf(Dd, 0, sigma_cdf) .* dDd_dq;
+        p = prob.^ Dn .*(1-prob).^Dtn;
+        %dp_dq = prob.^(max(Dn-1, 0)).*((1-prob).^(max(Dtn-1,0)))...
+        %            .*(Dn - Dtn.*prob) .* dprob_dq;
+        dp_dq = (Dn.* prob.^(max(Dn-1, 0)) .* ((1-prob).^(max(Dtn,0))) - ...
+                    Dtn .* ((1-prob).^(max(Dtn - 1,0))) .* prob.^Dn) .* dprob_dq;
 
         L_reg = 0; % regularization loss term
+        dLreg_dq = 0;
         if strcmp( opt.regularization, 'mean0' )
             L_reg = 0.01 * sum(mean(q).^2);
+            dLreg_dq = 0.01 * 2 * mean(q) * q / size(q,1);
         end 
         
         % Compute prior
         switch opt.prior
             case 'gaussian'
-                
-                prior = zeros(comp_made,1);
-                for zz=1:N
-                    for hh=1:N
+                % Vectorize the double for loop                
+                pos = find(D_sum > 0);
+                n = D_sum(pos)';
+                k = D_wUA(pos)';
 
-                        n = D_sum(zz,hh);
-                        %If the comparison has been performed
-                        if n>0
-                            k = D_wUA(zz,hh);
-                            % Compute the probability of each distance
-                            % according to all our answers
-                            aux = prob.^k .* (1-prob).^(n-k);
-                            prior = prior + (aux/sum(aux));
+                aux = prob.^(k) .* (1-prob).^((n-k));
+                sumaux = sum(aux);
+                prior = sum(aux./sumaux, 2);
 
-                        end
-                    end
-                end
+                % part of the derivatives.
+                daux_dq_A = (k .* prob.^(max(k-1,0)) .* (1-prob).^((n-k)) + ...
+                            prob.^k .* (- n + k) .* (1-prob).^(max(n-k-1,0)));
+
+                part1 = (daux_dq_A*(1./sumaux')) .* dprob_dq;
+                part2 = (1./sumaux.^2 .*aux) * (daux_dq_A'*dprob_dq);
+                dprior_dq = part1 - part2;
+
                 % The mean likelihood per answer is our prior (i.e., we compute
                 % the probability of observing a certain distance according to
                 % the rest of the answers in our comparison matrix)
@@ -252,6 +269,16 @@ R(valid) = JOD_dist_fit(valid) -  JOD_dist_data(valid);
                 error( 'Unknown prior option %s', opt.prior );
         end
         
+        dpart_dq = zeros(comp_made, N);
+        dpart_dq  = dpart_dq + 1./max( p, 1e-400).*( p > 1e-400)  .* (dp_dq);
+        if opt.prior == 'gaussian'
+            dpart_dq  = dpart_dq + 1./max(prior + 0.1, 1e-400) .* (prior > -0.1 + 1e-400) .* dprior_dq;
+        end
+
+        grad = dLreg_dq - sum(dpart_dq)';
+        if ~strcmp( opt.regularization, 'mean0' )
+            grad = grad(2:end);
+        end
         P = -sum( log( max( p, 1e-400)  ) + ...
             log( max( prior + 0.1, 1e-400) ) ) + ...
             L_reg;
