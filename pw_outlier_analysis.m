@@ -11,7 +11,7 @@ function [L,dist_L] = pw_outlier_analysis( M_list )
 % The function can also take as input a list of MM matrices. This is useful
 % if a pairwise comparison experiment was performed for several scenes but
 % with the same set of observers. If the list is provided, likelihoods are
-% summed across all scenes, give more reliable data. 
+% summed across all scenes and give more reliable data. 
 % 
 % The function returns a vector of log-10 likelihoods, one entry for each
 % observer. The values represent a log-10 likelihood of observing the data 
@@ -24,7 +24,7 @@ function [L,dist_L] = pw_outlier_analysis( M_list )
 % 
 % The result of this analysis should be interpreted with care: small
 % differences in log-10 likelihood normally occur due to random effects.
-% Observers can be rejected only if the (negatiuve) log-likelihood is much
+% Observers can be rejected only if the (negative) log-likelihood is much
 % smaller than for other observers.
 %
 % Author: Rafal Mantiuk
