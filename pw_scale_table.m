@@ -33,6 +33,11 @@ end
 GRs = unique( T.(group_col) ); % list of groups
 C = unique( cat( 1, T.(condition_cols{1}), T.(condition_cols{2}) ) ); % all conditions
 
+% The observer column must contain strings
+if isnumeric(T.(observer_col))
+    T.(observer_col) = mat2cell(num2str(T.(observer_col)), ones(height(T),1));
+end
+
 N = length(C);
 
 if options.do_all

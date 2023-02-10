@@ -111,6 +111,8 @@ See more examples in "examples" directory.
 
 * 16 Sep 2022 Added `pw_scale_table()` fuction. Fixed issues with Kolmogorov-Smirnov test.
 
+* 10 Jan 2023 The code is now vectorized and provides gradients for optimization. The scaling is much faster now. [Thanks to Zhongshi Jiang]
+
 ## Literature
 
 There is a number of papers describing the technique. When using the code, please cite [1]: 
