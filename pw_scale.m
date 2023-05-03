@@ -10,15 +10,10 @@ function [Q, R] = pw_scale( D, options )
 %	   'prior' - type of the distance prior in the available options are:
 %
 %                'none': do not use prior;
-%                'bounded': unsurance that the distance between quality 
-%                scores is within a bounded range, adaptively selected in
-%                each iteration of the MLE optimization;
 %                'gaussian': the normalised sum of probabilities of 
 %                observing a difference for all compared pairs of conditions.
 %
-%                Set to 'gaussian' by default. Bounded is faster to compute
-%                than Gaussian but is also marginally worse in the simulation
-%                results.
+%                Set to 'gaussian' by default. 
 %
 %       'regularization' - Since the quality scores in pairwise comparisons
 %                are relative and the absolute value cannot be obtained, it
@@ -259,9 +254,10 @@ R(valid) = JOD_dist_fit(valid) -  JOD_dist_data(valid);
                 % the rest of the answers in our comparison matrix)
             
             case 'bounded'
-                q_range = max(q)-min(q);
-                n_e = q_range+1;
-                prior = max( NUA(nnz_d), 1/n_e - abs(D(nnz_d))/n_e.^2 );
+                error( '"bounded" prior is no longer supported. Use "gaussian" instead.')
+%                 q_range = max(q)-min(q);
+%                 n_e = q_range+1;
+%                 prior = max( NUA(nnz_d), 1/n_e - abs(D(nnz_d))/n_e.^2 );
                 
             case 'none'
                 prior = ones(comp_made,1);
@@ -271,7 +267,7 @@ R(valid) = JOD_dist_fit(valid) -  JOD_dist_data(valid);
         
         dpart_dq = zeros(comp_made, N);
         dpart_dq  = dpart_dq + 1./max( p, 1e-400).*( p > 1e-400)  .* (dp_dq);
-        if opt.prior == 'gaussian'
+        if strcmp( opt.prior, 'gaussian' )
             dpart_dq  = dpart_dq + 1./max(prior + 0.1, 1e-400) .* (prior > -0.1 + 1e-400) .* dprior_dq;
         end
 

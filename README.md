@@ -103,6 +103,8 @@ See more examples in "examples" directory.
 
 ## Revision history
 
+* 9 February 2023 - The optimization code is now vectorized and calculates analytical gradient. This makes the optimization much faster, especially for a large number of conditions. "bounded" prior is no longer supported (or needed). [Contributed by Zhongshi Jiang]
+
 * 2 Feb 2017 Simplified cost function makes computation faster without alterning results 
 
 * 11 Dec 2016 Initial publicly available version
