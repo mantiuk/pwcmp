@@ -17,8 +17,10 @@ end
 % [R, Rs] = pw_scale_table( T, ..., 'do_all', bool )
 %
 % T is the table with the results
-% group_col - name of the column used to group the results. The scaling is perfored
-%             separately on each group
+% group_col - name of the column used to group the results. The scaling is performed
+%             separately on each group. Pass an empty string if all the
+%             data should be scaled together without splitting into
+%             groups.
 % conditions_col - a cell array with the name of the column string two
 %             compared conditions, for example { 'condition_A', 'condition_B' }
 % observer_col - the name of the column storing the ids of the observers
@@ -30,7 +32,12 @@ end
 % do_all - in addition to the per-group scaling, scale all results across
 %        all the groups
 
-GRs = unique( T.(group_col) ); % list of groups
+if isempty(group_col)
+    GRs = {};
+    options.do_all = true;
+else
+    GRs = unique( T.(group_col) ); % list of groups
+end
 C = unique( cat( 1, T.(condition_cols{1}), T.(condition_cols{2}) ) ); % all conditions
 
 % The observer column must contain strings
@@ -100,7 +107,9 @@ for gg=start_group:length(GRs)
     [jod, stats] = pw_scale_bootstrp( MM, options.bootstrap_samples, { 'prior', options.prior } );
     toc    
     
-    S.(group_col) = repmat( { group }, [N 1] );
+    if ~isempty(group_col)
+        S.(group_col) = repmat( { group }, [N 1] );
+    end
     S.condition = C;
     S.jod = jod;
     S.jod_low = stats.jod_low;
