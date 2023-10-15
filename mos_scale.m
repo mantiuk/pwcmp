@@ -4,6 +4,11 @@ arguments
     condition_id (:,1)
     quality (:,1) { mustBeNumeric }
 end
+% The function implememts scaling of direct ranking data from the paper: 
+% Zhi Li, et al. "A Simple Model for Subject Behavior in Subjective
+% Experiments" (https://arxiv.org/pdf/2004.02067)
+%
+
 
 if ~all(size(observer_id)==size(condition_id)) || ~all(size(condition_id)==size(quality))
     error( 'observer_id, condition_id and quality must be column vectors of the same size' );
@@ -21,7 +26,7 @@ log_v_0 = ones(K,1)*-2;
 par_0 = [phi_0' delta_0' log_v_0'];
 
 sigma_delta = (max(quality)-min(quality))/5;
-alpha = N; %1/(2*sigma_delta^2);
+alpha = 1; %1/(2*sigma_delta^2);
 
 par_rec = fminunc( @log_likelyhood, par_0 );
 
@@ -36,7 +41,7 @@ v_rec = exp(par_rec((N+K+1):(N+K*2)));
         delta = par((N+1):(N+K))';
         log_v = par((N+K+1):(N+K*2))';
 
-        L = sum( (quality-phi(cond_ind)-delta(obs_ind)).^2./(2*exp(log_v(obs_ind)).^2) + log_v(obs_ind) );%  + alpha*sum( delta.^2 );
+        L = sum( (quality-phi(cond_ind)-delta(obs_ind)).^2./(2*exp(log_v(obs_ind)).^2) + log_v(obs_ind) ) + alpha*sum( delta.^2 );
     end
 
 end
