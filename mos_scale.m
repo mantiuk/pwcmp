@@ -32,7 +32,7 @@ if options.no_delta
 
     phi_rec = par_rec(1:N);
     v_rec = exp(par_rec((N+1):(N+K)));
-
+    delta_rec = nan(size(v_rec));
 else
 
     par_0 = [phi_0' delta_0' log_v_0'];
