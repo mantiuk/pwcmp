@@ -1,8 +1,8 @@
 % Test scaling of MOS values
 
 N = 70; % Number of assessed conditions
-K = 15; % Number of observers
-R = 5; % The number of repetitions
+K = 10; % Number of observers
+R = 2; % The number of repetitions
 
 s = RandStream('mt19937ar', 'Seed', 10 );
 
