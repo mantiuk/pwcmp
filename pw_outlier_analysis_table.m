@@ -38,7 +38,12 @@ end
 
 N = length(C);
 
-MM_l = {};
+%MM_l = {};
+
+OBSs_all = unique( T.(observer_col) );
+
+N_obs = numel(OBSs_all);
+L_all = zeros(N_obs,length(GRs));
 
 % for each group
 for gg=1:length(GRs)
@@ -81,20 +86,25 @@ for gg=1:length(GRs)
         
     end
     
-    MM_l{gg} = MM;
- 
+    [L,dist_L] = pw_outlier_analysis(MM);
+    
+    % Each group may have a different number of observers, so we need to
+    % match those
+    for oo=1:length( OBSs )
+        ind = find( strcmp(OBSs{oo}, OBSs_all) );
+        assert( numel(ind)==1 );
+        L_all(ind,gg) = L(oo);
+    end 
 end
 
-[L,dist_L] = pw_outlier_analysis(MM);
 
 clf;
-ind = 1:length(OBSs);
-plot( L, ind, 'o' );
+ind = 1:N_obs;
+plot( sum(L_all,2), ind, 'o' );
 set( gca, 'YTick', ind );
-set( gca, 'YTickLabel', OBSs );
+set( gca, 'YTickLabel', OBSs_all );
 xlabel( 'Log likelihood' );
 title( 'The log-likelihood reports similarity to all other observers', 'FontWeight', 'normal' );
 grid on;
-
 
 end
