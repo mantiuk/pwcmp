@@ -1,42 +1,32 @@
-function [R, Rs] = pw_scale_table( T, group_col, condition_cols, observer_col, selection_col, options )
+function pw_plot_cmp_table( T, group_col, condition_cols, observer_col, selection_col )
 arguments
     T table
     group_col char
     condition_cols (1,2) cell = { 'condition_A', 'condition_B' }
     observer_col char = 'observer'
     selection_col char = 'selected_A'
-    options.bootstrap_samples (1,1) {mustBeGreaterThanOrEqual(options.bootstrap_samples,0),mustBeInteger} = 500
-    options.prior char = 'gaussian'
-    options.do_all logical = false
 end
-% Scales pairwise comparison results stored in a table
-% 
-% [R, Rs] = pw_scale_table( T, group_col, condition_cols, observer_col, selection_col )
-% [R, Rs] = pw_scale_table( T, ..., 'boostrap_samples', N )
-% [R, Rs] = pw_scale_table( T, ..., 'prior', prior_name )
-% [R, Rs] = pw_scale_table( T, ..., 'do_all', bool )
+% Plot a table with pairwise comparisons. 
+%
+% pw_plot_cmp_table( T, group_col, condition_cols, observer_col, selection_col )
 %
 % T is the table with the results
-% group_col - name of the column used to group the results. The scaling is performed
-%             separately on each group. Pass an empty string if all the
-%             data should be scaled together without splitting into
-%             groups.
+% group_col - name of the column used to group the results. For example, if
+%             the scaling is performed separately for each scene/content, 
+%             this should be the column with the ID of the content. Pass
+%             an empty array ([]) if there are no groups in the table. 
 % conditions_col - a cell array with the name of the column string two
 %             compared conditions, for example { 'condition_A', 'condition_B' }
 % observer_col - the name of the column storing the ids of the observers
 % selection_col - the name of the variable indicating whether the first
 %             condition was selected. The values must be 0 or 1
-% optional arguments:
-% bootstrap_samples - see 'bootstrap_samples' in pw_scale_bootstrp
-% prior - see 'prior' in pw_scale_bootstrp
-% do_all - in addition to the per-group scaling, scale all results across
-%        all the groups
 
 if isempty(group_col)
     GRs = {};
-    options.do_all = true;
+    N_g = 1;
 else
     GRs = unique( T.(group_col) ); % list of groups
+    N_g = length( GRs );
 end
 C = unique( cat( 1, T.(condition_cols{1}), T.(condition_cols{2}) ) ); % all conditions
 
@@ -47,26 +37,18 @@ end
 
 N = length(C);
 
-if options.do_all
-    start_group = 0;
-else
-    start_group = 1;
-end
 
-R = []; % Store scaled results as a dataset (for the CSV file)
-Rs = cell(length(GRs) + 1-start_group,1); % and as a cell array
+% for each group
+for gg=1:N_g
 
-pp = 1;
-% for each scene
-for gg=start_group:length(GRs)
-
-    if gg==0
+    if isempty(group_col)
         Ds = T;
         group = 'all';
-    else
+    else   
         Ds = T( strcmp( T.(group_col), GRs{gg} ), :);
         group = GRs{gg};
     end
+
     fprintf( 1, 'Group: %s\n', group );
     
     OBSs = unique( Ds.(observer_col) );
@@ -103,31 +85,14 @@ for gg=start_group:length(GRs)
         
     end
     
-    tic
-    [jod, stats] = pw_scale_bootstrp( MM, options.bootstrap_samples, { 'prior', options.prior } );
-    toc    
-    
-    if ~isempty(group_col)
-        S.(group_col) = repmat( { group }, [N 1] );
-    end
-    S.condition = C;
-    S.jod = jod;
-    S.jod_low = stats.jod_low;
-    S.jod_high = stats.jod_high;
+    cmp_table = reshape( sum(MM), N, N );
 
-    Rn = struct2table(S);
-        
-    if( ~isempty(R) )
-        R = vertcat( R, Rn );
-    else
-        R = Rn;
-    end    
-    
-    Rs{pp}.scene = group;
-    Rs{pp}.jod = jod;
-    Rs{pp}.stats = stats;
-    pp = pp + 1;
-    
+    figure(gg);
+    clf;
+    C_noun = strrep( C, '_', ' ' );
+    heatmap( C_noun, C_noun, cmp_table );
+    title( 'The condition in a row selected over the condition in a column' );
+ 
 end
 
 end

@@ -40,15 +40,10 @@ function [jod, stats] = pw_scale_bootstrp( MM, boostrap_samples, options )
 %
 %	   'prior' - type of the distance prior in the available options are:
 %                'none': do not use prior;
-%                'bounded': unsurance that the distance between quality 
-%                scores is within a bounded range, adaptively selected in
-%                each iteration of the MLE optimization;
 %                'gaussian': the normalised sum of probabilities of 
 %                observing a difference for all compared pairs of conditions.
 %
-%                Set to 'gaussian' by default. Bounded is faster to compute
-%                than Gaussian but is also marginally worse in the simulation
-%                results.
+%                Set to 'gaussian' by default. 
 %      
 %      'regularization' - Since the quality scores in pairwise comparisons
 %                are relative and the absolute value cannot be obtained, it
