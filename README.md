@@ -1,6 +1,8 @@
+![logo](https://github.com/mantiuk/pwcmp/blob/logo/logo/pwcmp_128.png)
+
 # pwcmp 
 
-This is a set of matlab functions for scaling of pairwise comparison experiment results based on Thurstone's model V assumptions.
+`pwcmp` is a set of Matlab functions for scaling of pairwise comparison experiment results based on Thurstone's model V assumptions.
 
 The main features:
 
