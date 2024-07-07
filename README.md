@@ -1,6 +1,6 @@
-![logo](https://github.com/mantiuk/pwcmp/blob/logo/logo/pwcmp_128.png)
 
-# pwcmp 
+
+# ![logo](https://github.com/mantiuk/pwcmp/blob/logo/logo/pwcmp_128.png) pwcmp 
 
 `pwcmp` is a set of Matlab functions for scaling of pairwise comparison experiment results based on Thurstone's model V assumptions.
 
@@ -13,6 +13,8 @@ The main features:
 * Outlier rejection to screen observers that perform differently than the rest.
 
 * The code can compute confidence intervals using bootstrapping. 
+
+The detailed explanation on how the scaling works and how to analyse the data can be found in [this paper](https://arxiv.org/abs/1712.03686).
 
 ## Usage
 
