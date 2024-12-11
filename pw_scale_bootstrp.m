@@ -78,7 +78,7 @@ function [jod, stats] = pw_scale_bootstrp( MM, bootstrap_samples, options )
 %      conditions
 
 
-if( ~exist( 'boostrap_samples', 'var' ) || bootstrap_samples==0 )
+if( ~exist( 'bootstrap_samples', 'var' ) || bootstrap_samples==0 )
     bootstrap_samples = 1;
 end
 
