@@ -18,70 +18,66 @@ The detailed explanation on how the scaling works and how to analyse the data ca
 
 ## Usage
 
-The code for this example can be found in the "examples" folder, under the name of video_TMO_analysis_example, in which we analyse the data from a video tone mapping evaluation project.
+The code for this example can be found in the "examples" folder, under the name of `ex3_video_tmo_example.m`, in which we analyse the data from a video tone mapping evaluation project.
 
 We recommend to keep the data in a tabulated format, such as comma-separated-files (CSV), in which each condition is described by meaningful labels. Such files are easy to read with any software and can be easily interpreted even long after the data have been collected. The following table shows a few rows from the analysed dataset.
 
-
-| Observer | Session | Scene | Condition_1 | Condition_2 | Selection |
+| observer | session | scene | condition_A | condition_B | is_A_selected |
 | ----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
 | 1 | 1 | Window	| TMO_Camera	| Ferwerda96 | 1 |
-| 1 | 1 | Exhibition | Ronan12 | Irawan05	| 2 |
-| 1 | 1 | Corridor | Irawan05 | Ferwerda96 |	1 |
-| 2 | 2 | Corridor |	Ronan12 | TMO_Camera | 2|
+| 1 | 1 | Exhibition | Ronan12 | Irawan05	| 0 |
+| 1 | 1 | Corridor | Irawan05 | Ferwerda96 | 1 |
+| 2 | 2 | Corridor |	Ronan12 | TMO_Camera | 0 |
 
-
-The first step is to convert the answers from the table into a set of comparison matrices M, one matrix per each observer. In such a matrix, columns and rows correspond to compared conditions and matrix value c_{ij}=n means that condition O_i was n times selected as better than condition O_j. If there is a reference condition, such as a non-distorted image, it should be put in the matrix as the first condition in the first row and column. The first condition will be assigned a fixed quality value of 0. 
-
-The second step is to perform outlier analysis to detect potential observers who performed very differently from the rest. The function to perform this analysis is
-
+The data can be loaded from the `.csv` file using Matlab's `readtable` function. 
+```
+D = readtable( 'ex3_tmo_cmp_data.csv' );
 ```
 
-[L,L_dist]=pw_outlier_analysis(M)
+The first step is to perform outlier analysis to detect potential observers who performed very differently from the rest. The function to perform this analysis is:
 
 ```
+[L,dist_L, OBSs] = pw_outlier_analysis_table( D, { 'scene' }, { 'condition_A', 'condition_B' }, 'observer', 'is_A_selected' );
+```
+which receives the table D with the responses per observer and returns the likelihood `L` of observing the data of each observer and a inter-quartile-normalised score `dist_L`, which indicates the observers that should be further investigated. Since there is no objective threshold that could distinguish outliers with high confidence, we advise to investigate all observers whose `dist_L` score is close or above the customary threshold of 1.5.
 
-which receives a matrix M with the responses per observer and returns the likelihood L of observing the data of each observer and a inter-quartile-normalised score L_dist, which indicates the observers that should be further investigated. Since there is no objective threshold that could distinguish outliers with high confidence, we advise to investigate all observers whose L_dist score is close or above the customary threshold of 1.5.
+The function will plot the expected likelyhood for each observer, which indicates how similar are their responses to all other observers. The higher is likelihood, the higher is the similarity. The vertical dashed line indicates the 25th percentile. The numbers shown for the observers whose probability lies on the left of the dashed line indicate the relative distance to the 25th percentile, repotred as the ratio of distance to the interquantile range. The values greater than 1 are marked in red and could indicate outliers. 
 
-The results for the 18 observers in the analysed dataset indicate that there is one observer with a score of 2.72, which requires further attention.
-
-To compare the answers of the indicated observer (observer number n_obs) to the rest of observers, we use the function 
-
-
+The results for the 18 observers in the analysed dataset indicate that there are two observers with scores greater than 1.5, which we exclude from the further analysis:
+```
+% Remove observers for which dist_L>1.5
+fprintf( 1, 'Detected outliers:\n' );
+fprintf( 1, '\t%s\n', OBSs{dist_L>1.5} );
+D_no_outlier = D(~ismember(D.observer, OBSs(dist_L>1.5)),:);
 ```
 
-compare_probs_observer(M, n_obs)
-
+Next, we can scale the results and compute confidence intervals using
+```
+[R, Rs] = pw_scale_table(D_no_outlier, 'scene', { 'condition_A', 'condition_B' }, ...
+    'observer', 'is_A_selected', 'bootstrap_samples', bootstrap_samples, 'do_all', true );
 ```
 
-which plots the probabilities of selecting one condition over all others. Note that this presentation of the data does not involve scaling, which could obscure the patterns that are specific to an outlier. The black circles in the plot represent the answers of the potential outlier. We recommend performing a detailed per-observer analysis, rather than using an arbitrary measure to exclude observers. 
+The function expects the table with pairwise comparisons returns a table with scaled quality values and a set of statistics. Confidence intervals represent the range in which the estimated quality values lie with 95\% confidence. The confidence intervals, however, should not be used to infer statistical significance of the difference. Use at least 500-1000 `bootstrap_samples` to obtain accurate confidence intervals. As bootstrapping takes time, you can pass 0 for `bootstrap_samples` to disable computation of confidence intervals. 
 
-Once we are confident there are no outliers in the dataset, we can scale the results and compute confidence intervals using
-```
+The function above can take several optional parameters (name, value pairs). The most relevant are: 
 
-[jod, stats]=pw_scale_bootstrp(M, boostrap_samples, options)
+* `do_all` - in addition to per-group scaling (per scene in this example), scale the results across all groups and put the resukt in the new group `all`
 
-```
-
-The function expects the same matrix of comparison per observer `M` as the outlier analysis and returns the scaling solution and a set of statistics. Confidence intervals represent the range in which the estimated quality values lie with 95\% confidence. The confidence intervals, however, should not be used to infer statistical significance of the difference. Use at least 500-1000 `bootstrap_samples` to obtain accurate confidence intervals. As bootstrapping takes time, you can pass 0 for `bootstrap_samples` to disable computation of confidence intervals. 
-
-The cell-array `options` allows to select the type of prior, regularization, set the confidence level, and display options. Refer to the documentation of the function for details. The two most relevant options are:
-
-* `prior` - The prior that ensures that the distance between pairs of conditions is finite. It helps to reduce the estimation error when the number of measurements is low. The default option is to use the `gaussian` prior, which is slower but more accurate than the `bounded` prior. Use `bounded` when scaling (or bootstrapping) takes too much time. Set to `none` to disable prior. 
+* `prior` - The prior that ensures that the distance between pairs of conditions is finite. It helps to reduce the estimation error when the number of measurements is low. The default option is to use the `gaussian` prior. Set to `none` to disable prior. 
 
 * `regularization` - Since the quality scores in pairwise comparisons are relative and the absolute value cannot be determined, it is necessary to make an assumption how the absolute values are fixed in the optimization. The two options are  `mean0` (default) that makes mean JOD value equal to 0 and `fix0` which fixes the score of the first condition to 0. `mean0` results in a reduced overall estimation error as compared to `fix0`. However, `fix0` can be used to ensure that the estimation error is the smallest near the first condition. 
 
 Statistical tests can be performed using the function 
 
 ```
-
-pw_plot_ranking_triangles(jod,stats)
+%% Perform statistical test for `all` group
+pw_plot_ranking_triangles( Rs{1}.jod, Rs{1}.stats, C )
 
 ```
 which produces a plot that can be used to interpret data in terms of statistical significance. The continuous lines in this plot indicate statistically significant difference between the pair of conditions and the dashed lines indicate the lack of evidence for statistically significant difference.
 
-If we do not have access to the comparison matrix per observer or we do not want to analyse confidence intervals the following scaling function can be used instead
 
+If we do not have access to the comparison matrix per observer or we do not want to analyse confidence intervals the following scaling function can be used instead
 
 ```
 % Simple example showing how to execute scaling method
@@ -98,7 +94,6 @@ Q = pw_scale( D );
 display( Q )
 ```
 
-
 See more examples in "examples" directory.
 
 ## Related projects
@@ -106,6 +101,10 @@ See more examples in "examples" directory.
 * [ASAP: Active Sampling for Pairwise Comparisons](https://github.com/gfxdisp/asap) - an effective method for reducing the number of required pairwise comparisons. 
 
 ## Revision history
+
+* 14 December 2024 
+  - Outlier analysis now normalizes the likelihood by the number of trials so that observers with a larger numer of trials do not have lower likelihood. The visualization and documentation have been improved. 
+  - Updated the example in this README.md file to use a newer table-based interface
 
 * 9 February 2023 - The optimization code is now vectorized and calculates analytical gradient. This makes the optimization much faster, especially for a large number of conditions. "bounded" prior is no longer supported (or needed). [Contributed by Zhongshi Jiang]
 

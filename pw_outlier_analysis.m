@@ -16,10 +16,12 @@ function [L,dist_L] = pw_outlier_analysis( M_list )
 % The function returns a vector of log-10 likelihoods, one entry for each
 % observer. The values represent a log-10 likelihood of observing the data 
 % for k-th observer (participant) if the true JOD values are given by scaling
-% data for all other participants. 
+% data for all other participants. The log-10 likelihood is normalized by
+% the number of observations. Otherwise, the observers who
+% completed more trials would always have lower likelihood. 
 % 
-% The function also displays log-10 likelihood and log-ratio difference
-% for each observer. Large positive log-ratio difference (e.g. greater than
+% The function also returns the relative distance to the left boundary of the 
+% interquartile range - dist_L. Large positive dist_L (e.g. greater than
 % 1) could indicate that a particular observer is an outlier. 
 % 
 % The result of this analysis should be interpreted with care: small
@@ -37,9 +39,10 @@ N = sqrt(size(M_list{1},2));  % The number of conditions
 assert( (N - floor(N)) == 0 );
 N_obs = size(M_list{1},1);  % The number of observers
 
-L = zeros(N_obs,1); % Log-likelihood per observer
+L = zeros(N_obs,1); % Normnalized Log-likelihood per observer
+N_trials = zeros(N_obs,1); % The number of trials completed by this observer
 
-for ss=1:length(M_list)
+for ss=1:length(M_list) % for each group
     
     MM = M_list{ss};
     assert( size(MM,1) == N_obs ); % The number of observers must be the same for each scene
@@ -73,16 +76,18 @@ for ss=1:length(M_list)
         sel_p = (triu(ones(size(p)),1)==1) & (D_sum>0);
         p_all = p(sel_p);
         
-        L(oo) = L(oo) + sum( log( max( p_all, 1e-200) ) );
-             
+        L(oo) = L(oo) + sum( log10( max( p_all, 1e-200) ) );
+        N_trials(oo) = N_trials(oo) + numel(p_all);            
     end
     
 end
+N_trials(N_trials==0) = 1; % To avoid div0
+L = L./N_trials; % Normalize by the number of trials
 
 IR = iqr(L);
 fq = quantile(L,0.25);
     
-% Distance to the left part of the distribution
+% Relative distance to the left part of the distribution
 dist_L = ((fq - L)/IR).*(L<fq);
 
 end

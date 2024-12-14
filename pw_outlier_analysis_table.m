@@ -1,4 +1,4 @@
-function [L,dist_L] = pw_outlier_analysis_table( T, group_col, condition_cols, observer_col, selection_col )
+function [L,dist_L, OBSs] = pw_outlier_analysis_table( T, group_col, condition_cols, observer_col, selection_col )
 arguments
     T table
     group_col char
@@ -8,6 +8,15 @@ arguments
 end
 % Performs outlier analysis on the data in a table. The observers for which
 % the log-likelihood is significantly smaller are potential outliers. 
+%
+% The function will plot the expected likelyhood for each observer, which
+% indicates how similar are their responses to all other observers. The
+% higher is likelihood, the higher is the similarity. The vertical dashed
+% line indicates the 25th percentile. The numbers shown for the observers
+% whose probability lies on the left of the dashed line indicate the
+% relative distance to the 25th percentile, repotred as the ratio of
+% distance to the interquantile range. The values greater than 1 are marked
+% in red and could indicate outliers. 
 %
 % See pw_outlier_analysis for more information on the outlier analysis. The
 % method is explained in Section 9 of https://arxiv.org/abs/1712.03686
@@ -23,6 +32,11 @@ end
 % observer_col - the name of the column storing the ids of the observers
 % selection_col - the name of the variable indicating whether the first
 %             condition was selected. The values must be 0 or 1
+%
+% The function returns
+% L - the expected likelihood per observer
+% dist_L - the relative distance from the interquantile range
+% OBSs - the IDs of the observers
 
 if isempty(group_col)
     GRs = {};
@@ -38,15 +52,12 @@ end
 
 N = length(C);
 
-%MM_l = {};
+OBSs = unique( T.(observer_col) );
 
-OBSs_all = unique( T.(observer_col) );
+N_obs = numel(OBSs);
 
-N_obs = numel(OBSs_all);
-L_all = zeros(N_obs,length(GRs));
-
-% for each group
-for gg=1:length(GRs)
+MM_groups = cell(length(GRs),1);
+for gg=1:length(GRs) % for each group
 
     Ds = T( strcmp( T.(group_col), GRs{gg} ), :);
     group = GRs{gg};
@@ -85,26 +96,29 @@ for gg=1:length(GRs)
         MM(oo,:) = M(:);
         
     end
-    
-    [L,dist_L] = pw_outlier_analysis(MM);
-    
-    % Each group may have a different number of observers, so we need to
-    % match those
-    for oo=1:length( OBSs )
-        ind = find( strcmp(OBSs{oo}, OBSs_all) );
-        assert( numel(ind)==1 );
-        L_all(ind,gg) = L(oo);
-    end 
+
+    MM_groups{gg} = MM;
 end
 
+[L, dist_L] = pw_outlier_analysis(MM_groups);
+
+fq = quantile(L,0.25);
 
 clf;
 ind = 1:N_obs;
-plot( sum(L_all,2), ind, 'o' );
+plot( [1 1]*10.^fq, [ind(1), ind(end)], '--k' );
+hold on;
+plot( 10.^L, ind, 'ob', 'MarkerFaceColor', 'b' );
+ss = (dist_L>=1);
+plot( 10.^L(ss), ind(ss), 'or', 'MarkerFaceColor', 'r' );
+ss = (dist_L>0);
+text( 10.^(L(ss)+0.002), ind(ss), num2str(dist_L(ss), '%.3f') )
+
 set( gca, 'YTick', ind );
-set( gca, 'YTickLabel', OBSs_all );
-xlabel( 'Log likelihood' );
-title( 'The log-likelihood reports similarity to all other observers', 'FontWeight', 'normal' );
+set( gca, 'YTickLabel', OBSs );
+xlabel( '(Expected) likelihood' );
+title( 'The higher likelihood means higher similarity to all other observers', 'FontWeight', 'normal' );
 grid on;
+ylim( [0.5 N_obs+0.5] );
 
 end
