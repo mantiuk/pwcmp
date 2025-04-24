@@ -7,6 +7,7 @@ arguments
     selection_col char = 'selected_A'
     options.bootstrap_samples (1,1) {mustBeGreaterThanOrEqual(options.bootstrap_samples,0),mustBeInteger} = 500
     options.prior char = 'gaussian'
+    options.regularization char = 'mean0'
     options.do_all logical = false
 end
 % Scales pairwise comparison results stored in a table
@@ -104,7 +105,7 @@ for gg=start_group:length(GRs)
     end
     
     tic
-    [jod, stats] = pw_scale_bootstrp( MM, options.bootstrap_samples, { 'prior', options.prior } );
+    [jod, stats] = pw_scale_bootstrp( MM, options.bootstrap_samples, { 'prior', options.prior, 'regularization', options.regularization } );
     toc    
     
     if ~isempty(group_col)

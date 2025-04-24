@@ -1,4 +1,4 @@
-function [jod, stats] = pw_scale_bootstrp( MM, boostrap_samples, options )
+function [jod, stats] = pw_scale_bootstrp( MM, bootstrap_samples, options )
 % Scaling method for pairwise comparisons with bootstrapped confidence
 % intervals.
 %
@@ -78,8 +78,8 @@ function [jod, stats] = pw_scale_bootstrp( MM, boostrap_samples, options )
 %      conditions
 
 
-if( ~exist( 'boostrap_samples', 'var' ) || boostrap_samples==0 )
-    boostrap_samples = 1;
+if( ~exist( 'bootstrap_samples', 'var' ) || bootstrap_samples==0 )
+    bootstrap_samples = 1;
 end
 
 if( ~exist( 'options', 'var' ) )
@@ -120,7 +120,7 @@ end
 
 stats = struct();
 
-if( boostrap_samples == 1 || size(MM,1) < 2 )
+if( bootstrap_samples == 1 || size(MM,1) < 2 )
     stats.jod_low = jod;
     stats.jod_high = jod;
     stats.jod_cov = zeros(N,N);
@@ -128,13 +128,13 @@ if( boostrap_samples == 1 || size(MM,1) < 2 )
 end
 
 if( opt.display_level > 0 )
-    fprintf( 1, 'Generating %d bootstrap samples. It can take a while...\n', boostrap_samples );
+    fprintf( 1, 'Generating %d bootstrap samples. It can take a while...\n', bootstrap_samples );
 end
 
 % Use if parallel proc toolbox available
 options = statset( 'UseParallel', opt.use_parallel ); 
 %options = statset(  );
-bstat = bootstrp( boostrap_samples, @boot_jod, MM, 'Options', options );
+bstat = bootstrp( bootstrap_samples, @boot_jod, MM, 'Options', options );
 
 stats.bstrp = bstat;
 
