@@ -76,7 +76,8 @@ opt = struct();
 
 % We don't the prior by default
 opt.prior = 'gaussian';
-opt.regularization='mean0';
+opt.regularization = 'mean0';
+opt.use_gradients = true; 
 for kk=1:2:length(options)
     if( ~isfield( opt, options{kk} ) )
         error( 'Unknown option %s', options{kk} );
@@ -149,8 +150,6 @@ if( Ng > 1 )
     end
 end
 
-options = optimset( 'Display', 'off', 'LargeScale', 'off' );
-
 D_sum = D + D';
 Dt = D';
 nnz_d = (D_sum)>0;
@@ -173,7 +172,7 @@ else
     Q_0 = zeros(N-1,1);
 end
 
-options = optimoptions('fminunc','SpecifyObjectiveGradient',true,'CheckGradients',false, 'Display', 'off');
+options = optimoptions('fminunc','SpecifyObjectiveGradient', opt.use_gradients, 'Display', 'off');
 Q = fminunc( @exp_prob_grad, Q_0, options );
 
 if ~strcmp( opt.regularization, 'mean0' )
