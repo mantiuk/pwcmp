@@ -38,7 +38,7 @@ for ss=1:length(SCENEs)
 end
 
 % Add offset to have only positive JODs
-jod_offset = - min(JODs) + 1;
+jod_offset = - min(JODs, [], 2) + 1;
 JODs = JODs + jod_offset;
 
 

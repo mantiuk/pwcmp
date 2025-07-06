@@ -1,6 +1,6 @@
 % This is an example of scaling a large-size experiment (26580 comparisons) 
 %
-% Running this example can take some time (up to 1 few hours). Set
+% Running this example can take some time (up to a few hours). Set
 % boostrap_samples = 0 to compute JODs but no confidence intervals. 
 %
 % The data for this example comes from the paper:
@@ -74,7 +74,7 @@ for st=1:length(STs)
         end
         
         tic
-        [jod, stats] = pw_scale_bootstrp( MM, boostrap_samples , { 'regularization', 'fix0', 'prior', 'gaussian', 'use_parallel', 'always' } );
+        [jod, stats] = pw_scale_bootstrp( MM, boostrap_samples , 'regularization', 'fix0', 'prior', 'gaussian', 'use_parallel', 'always' );
         toc
         jod_se = sqrt(diag(stats.jod_cov));
         

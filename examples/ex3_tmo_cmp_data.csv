@@ -1,4 +1,4 @@
-observer,session_id,scene,condition_A,condition_B,is_A_selected,criterion
+observer,session_id,scene,condition_B,condition_A,is_A_selected,criterion
 M01,1,window,tmo_camera,ferwerda96,0,perceptual
 M01,1,exhibition,ronan12,irawan05,1,perceptual
 M01,1,corridor,irawan05,ferwerda96,0,perceptual
