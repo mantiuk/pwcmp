@@ -47,7 +47,7 @@ N_reps = 1;
 
 q_s = zeros(N_exps,N);
 
-parfor ee=1:N_exps
+for ee=1:N_exps
     
     MM = zeros( N_obs, N*N );
     for oo=1:N_obs
@@ -64,7 +64,7 @@ parfor ee=1:N_exps
         MM(oo,:) = M(:);
         
     end    
-    q_s(ee,:) = pw_scale_bootstrp( MM, 1, { 'display', 'none' } );
+    q_s(ee,:) = pw_scale_bootstrp( MM, 1, 'display', 'none' );
     
 end
 

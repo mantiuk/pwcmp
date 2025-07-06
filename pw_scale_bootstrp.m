@@ -1,4 +1,13 @@
-function [jod, stats] = pw_scale_bootstrp( MM, bootstrap_samples, options )
+function [jod, stats] = pw_scale_bootstrp( MM, bootstrap_samples, opt )
+arguments
+    MM {mustBeMatrix}
+    bootstrap_samples {mustBeNonnegative, mustBeInteger} = 1
+    opt.display {mustBeMember(opt.display, {'info', 'none'})} = 'info'
+    opt.alpha {mustBeInRange(opt.alpha, 0, 1)} = 0.05
+    opt.use_parallel = 'always'
+    opt.regularization {mustBeMember(opt.regularization, {'mean0', 'fix0'})} = 'mean0'
+    opt.prior {mustBeMember(opt.prior, {'gaussian', 'none'})} = 'gaussian' 
+end
 % Scaling method for pairwise comparisons with bootstrapped confidence
 % intervals.
 %
@@ -31,7 +40,7 @@ function [jod, stats] = pw_scale_bootstrp( MM, bootstrap_samples, options )
 %      observers is high. 
 %
 % options - a cell array with the options. Currently recognized options:
-%      'display' - set to 'none' for quite operation, and 'info' to show
+%      'display' - set to 'none' for quiet operation, and 'info' to show
 %                some extra information. 'info' is the default option.
 %      'alpha' - the 'alpha' value for condidence interval. Default value
 %                of 0.05 results in 95% confidence intervals.
@@ -78,30 +87,8 @@ function [jod, stats] = pw_scale_bootstrp( MM, bootstrap_samples, options )
 %      conditions
 
 
-if( ~exist( 'bootstrap_samples', 'var' ) || bootstrap_samples==0 )
+if( bootstrap_samples==0 )
     bootstrap_samples = 1;
-end
-
-if( ~exist( 'options', 'var' ) )
-    options = {};
-end
-
-opt = struct();
-opt.display = 'info';
-opt.alpha = 0.05;
-opt.use_parallel = 'always';
-opt.regularization='mean0';
-opt.prior = 'gaussian';
-
-for kk=1:2:length(options)
-    if( ~isfield( opt, options{kk} ) )
-        error( 'Unknown option %s', options{kk} );
-    end
-    opt.(options{kk}) = options{kk+1};
-end
-
-if( opt.alpha < 0 || opt.alpha > 1 )
-    error( 'The "alpha" parameters must be between 0 and 1' );
 end
 
 opt.display_level = strcmp( opt.display, 'info' );
@@ -110,12 +97,12 @@ N = sqrt( size(MM,2) );
 
 M = reshape( sum(MM,1), N, N );
 
-round_simulated_ties()
+M = round_simulated_ties(M);
 
 [jod, R] = pw_scale( M, {'prior', opt.prior, 'regularization', opt.regularization});
-Rv = abs(R(~isnan(R)));
+Rv = abs(triu(R,1));
 if( opt.display_level > 0 )
-    fprintf( 1, 'Residual due to scaling: mean = %g; min = %g; max = %g\n', mean(Rv), min(Rv), nanmax(Rv) );
+    fprintf( 1, 'Residual due to scaling: mean = %g; min = %g; max = %g\n', mean(Rv(:), "omitmissing"), min(Rv(:)), max(Rv(:)) );
 end
 
 stats = struct();
@@ -140,35 +127,41 @@ stats.bstrp = bstat;
 
 % Test if each JOD-scaled point belongs to standard distribution
 H_p = 0;
-for kk=1:size(bstat,2)
+if strcmp( opt.regularization, 'fix0' )
+    first_cond = 2; % Skip the anchor condition, as std=0
+else
+    first_cond = 1;
+end
+
+for kk=first_cond:size(bstat,2)
     xb = bstat(:,kk);
     x = (xb-mean(xb))/std(xb);
     H_p = H_p + (1-kstest( x ));
 end
 if( opt.display_level > 0 )
-    fprintf( 1, '%d out of %d JOD-points have a standard normal distribution (Kolmogorov-Smirnov test)\n', H_p, size(bstat,2) );
+    fprintf( 1, '%d out of %d JOD-points have a standard normal distribution (Kolmogorov-Smirnov test)\n', H_p, size(bstat,2)-first_cond+1 );
 end
 
 stats.jod_low = prctile( bstat, opt.alpha*100/2 )';
 stats.jod_high = prctile( bstat, 100 - opt.alpha*100/2 )';
 stats.jod_cov = cov( bstat )';
 
-function [] = round_simulated_ties()
+    function Q = boot_jod( MM_bst )
+        M = reshape( sum(MM_bst,1), N, N );
+        M = round_simulated_ties( M );
+        Q = pw_scale( M, {'prior', opt.prior, 'regularization', opt.regularization} );
+    end
+
+end
+
+function M = round_simulated_ties(M)
     % In simmulation we allow ties i.e. an option of not giving preference
     % to one of two conditions results in 0.5 is assigned to both in a given
     % round. Since fractions are not allowed in the scaling, rounding is 
     % performed. The function rounds non-integer entries of the pwc matrix 
     % to the smaller or larger integer (randomly) but agreeing with the 
     % number of comparisons.
+    N = size(M,1);
     aux = triu((randi(2,[N,N])-1),1);
     M = (aux + triu(-(aux-1),1)').*round(M) + ~(aux + triu(-(aux-1),1)').*floor(M);
-end
-
-function Q = boot_jod( MM_bst )    
-    M = reshape( sum(MM_bst,1), N, N );
-    round_simulated_ties()
-    Q = pw_scale( M, {'prior', opt.prior, 'regularization', opt.regularization} );
-end
-
-
 end

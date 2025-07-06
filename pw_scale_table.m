@@ -7,8 +7,9 @@ arguments
     selection_col char = 'selected_A'
     options.bootstrap_samples (1,1) {mustBeGreaterThanOrEqual(options.bootstrap_samples,0),mustBeInteger} = 500
     options.prior char = 'gaussian'
-    options.regularization char = 'mean0'
+    options.regularization char {mustBeMember(options.regularization, {'mean0', 'fix0'})} = 'mean0'
     options.do_all logical = false
+    options.anchor_condition {mustBeText} = ''
 end
 % Scales pairwise comparison results stored in a table
 % 
@@ -40,6 +41,15 @@ else
     GRs = unique( T.(group_col) ); % list of groups
 end
 C = unique( cat( 1, T.(condition_cols{1}), T.(condition_cols{2}) ) ); % all conditions
+
+if ~isempty( options.anchor_condition )
+    ind = find( strcmp( C, options.anchor_condition ) );
+    if length(ind) ~= 1
+        error( 'Anchor condition %s not found', options.anchor_condition );
+    end
+    C{ind} = C{1};
+    C{1} = options.anchor_condition;
+end
 
 % The observer column must contain strings
 if isnumeric(T.(observer_col))
@@ -105,16 +115,23 @@ for gg=start_group:length(GRs)
     end
     
     tic
-    [jod, stats] = pw_scale_bootstrp( MM, options.bootstrap_samples, { 'prior', options.prior, 'regularization', options.regularization } );
+    [jod, stats] = pw_scale_bootstrp( MM, options.bootstrap_samples, 'prior', options.prior, 'regularization', options.regularization );
     toc    
     
     if ~isempty(group_col)
         S.(group_col) = repmat( { group }, [N 1] );
     end
+
+    if ~isempty( options.anchor_condition ) % 
+        offset = jod(1); % Shift the JODs so that the anchor=0
+    else
+        offset = 0;
+    end
+
     S.condition = C;
-    S.jod = jod;
-    S.jod_low = stats.jod_low;
-    S.jod_high = stats.jod_high;
+    S.jod = jod - offset;
+    S.jod_low = stats.jod_low - offset;
+    S.jod_high = stats.jod_high - offset;
 
     Rn = struct2table(S);
         
@@ -124,7 +141,8 @@ for gg=start_group:length(GRs)
         R = Rn;
     end    
     
-    Rs{pp}.scene = group;
+    Rs{pp}.conditions = C;
+    Rs{pp}.group = group;
     Rs{pp}.jod = jod;
     Rs{pp}.stats = stats;
     pp = pp + 1;
