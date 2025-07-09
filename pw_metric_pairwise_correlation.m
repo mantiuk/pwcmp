@@ -1,4 +1,4 @@
-function rho = pw_metric_pairwise_correlation( S, M, within_set, opt )
+function [rho, rho_ci] = pw_metric_pairwise_correlation( S, M, within_set, opt )
 arguments
     S  % cell array with scaled subjective data, returned by pw_scale_table
     M {istable(M)}
@@ -6,20 +6,21 @@ arguments
     opt.group_column {mustBeText} = 'group'
     opt.condition_column {mustBeText} = 'condition'
     opt.alpha {mustBeInRange(opt.alpha,0,1)} = 0.05
+    opt.scatter_plot {mustBeNumericOrLogical} = false
 end
 % The function computes the correlation between subjective scores (cell array
 % S) and metric predictions (table M) for the pairs of conditions that are
 % statistically different. The correlation is computed for the differences
-% between the pairs of condition: corr( JOD_A - JOD_B, MET_A - MET_B ).
+% between the pairs (A,B) as corr( JOD_A - JOD_B, MET_A - MET_B ).
 %
 % This analysis offers two advantages:
-% - we ignore pairs for which there is insufficient statistical evidence
+% - we ignore the pairs for which there is insufficient statistical evidence
 % to claim that one condition is better than another (the subjective data 
 % is too noisy)
 % - we can measure the correlation while discounting the effect of one or
 % more factors. For example, we can check whether metric can predict the
-% content-dependent differences, or condition-dependent differences. This
-% is controlled by the `within_set` parameter.
+% content-dependent differences in quality while ignoring all other factors. 
+% This is controlled by the `within_set` parameter.
 % 
 % S - a cell array returned as a second return argument of
 % pw_scale_table() with bootstrapping enabled. It is recommended that at
@@ -41,10 +42,11 @@ end
 % as in the subjective data (S), including reference conditions. 
 %
 % within_set - the name of the column of 'M', which is used to group pair
-% of conditions into sets. For example, if you want to check whether a
-% metric can predict the effect of condition while ignoring the effect of
-% the group (content), pass 'group'. This could the name of any column in
-% 'M'.
+% of conditions into sets. The conditions are paired with each other within 
+% each set, but not across the sets. For example, if you want to check 
+% whether a metric can predict the effect of condition while ignoring the effect of
+% the group (content), pass 'group'. This parameter shouyld be the name of 
+% any column in 'M'.
 
 if ~isempty(within_set) && ~ismember( within_set, M.Properties.VariableNames )
     error( 'Within group must be the column name in "M"')
@@ -111,10 +113,8 @@ else
     cor_sets = unique( M.(within_set) );
 end
 
-
-Q_subj_D = [];
-Q_met_D = [];
 Q_set = [];
+pairs = [];
 
 for gg=1:length(cor_sets)
 
@@ -138,25 +138,55 @@ for gg=1:length(cor_sets)
     pair_diff = nnz(different);
     fprintf( 1, 'Set: %s: %d out of %d pairs are statistically different (%.1f%%)\n', cor_sets{gg}, pair_diff, pair_total, pair_diff/pair_total*100 )
 
+    new_pairs = zeros(pair_diff,2);
+
+    pp_beg = 1;
     for kk=1:(N-1)
-        Q_subj_D = vertcat( Q_subj_D, (jod(inds(kk)) - jod(inds(different(kk,:)))) );
-        Q_met_D = vertcat( Q_met_D, (met_q(inds(kk)) - met_q(inds(different(kk,:)))) );
-        q_set = cell(nnz(different(kk,:)),1);
-        q_set(:) = { cor_sets{gg} };
-        Q_set = vertcat( Q_set, q_set );
+        pp_end = pp_beg + nnz(different(kk,:)) -1;
+        new_pairs(pp_beg:pp_end,1) = inds(kk);
+        new_pairs(pp_beg:pp_end,2) = inds(different(kk,:));
+        pp_beg = pp_end+1;
     end
+    q_set = cell(pair_diff,1);
+    q_set(:) = { cor_sets{gg} };
+    Q_set = vertcat( Q_set, q_set );
+    pairs = cat( 1, pairs, new_pairs );
     
 end
 
+Q_subj_D = jod(pairs(:,1)) - jod(pairs(:,2));
+Q_met_D = met_q(pairs(:,1)) - met_q(pairs(:,2));
 
-figure(1);
-clf;
-
-gscatter( Q_met_D, Q_subj_D, Q_set );
 rho = corr( Q_met_D, Q_subj_D, 'Type', 'Pearson' );
-title( sprintf( 'PLCC=%g', rho ) );
-xlabel( 'Metric A-B' )
-ylabel( 'Subjective score A-B [JOD]' )
+
+% Use boostrapping samples to estimate the confidence interval of the
+% correlations
+if true
+    % Random sample
+    N_samples = N_bstrp*floor(sqrt(N_bstrp));
+    brs = randi(N_bstrp, N_samples, 2);
+else
+    % Every combination of boostrap samples - slow, but most accurate
+    [b1, b2] = ind2sub( [N_bstrp, N_bstrp], 1:N_bstrp^2 );
+    brs = cat( 2, b1', b2' );
+end
+
+% Use boostrap samples
+B_subj_D = bstrp(brs(:,1),pairs(:,1)) - bstrp(brs(:,2),pairs(:,2));
+
+rho_dist = corr( Q_met_D, B_subj_D', 'Type', 'Pearson' );
+rho_ci = prctile( rho_dist', [opt.alpha/2*100, 100-opt.alpha/2*100], 'all' );
+
+if opt.scatter_plot
+    clf;
+    plot( [0 0], [min(Q_subj_D) max(Q_subj_D)], '--k' );
+    hold on
+    plot( [min(Q_met_D) max(Q_met_D)], [0 0], '--k' );
+    gscatter( Q_met_D, Q_subj_D, Q_set );    
+    title( sprintf( 'PLCC=%g (%g, %g)', rho, rho_ci(1), rho_ci(2) ) );
+    xlabel( 'Metric A-B' )
+    ylabel( 'Subjective score A-B [JOD]' )
+end
 
 
 end

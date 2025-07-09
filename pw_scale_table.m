@@ -33,6 +33,10 @@ end
 % prior - see 'prior' in pw_scale_bootstrp
 % do_all - in addition to the per-group scaling, scale all results across
 %        all the groups
+% anchor_condition - the string with the condition name used as an anchor.
+%   The scaled scores will be shifted after scaling so that the anchor 
+%   condition has the value of 0. anchor_condition is also the one used as
+%   zero-point when teh regulkarization is set to 'fix0'.
 
 if isempty(group_col)
     GRs = {};
@@ -124,6 +128,9 @@ for gg=start_group:length(GRs)
 
     if ~isempty( options.anchor_condition ) % 
         offset = jod(1); % Shift the JODs so that the anchor=0
+        stats.bstrp = stats.bstrp-offset;
+        stats.jod_low = stats.jod_low-offset;
+        stats.jod_high= stats.jod_high-offset;
     else
         offset = 0;
     end
@@ -143,7 +150,7 @@ for gg=start_group:length(GRs)
     
     Rs{pp}.conditions = C;
     Rs{pp}.group = group;
-    Rs{pp}.jod = jod;
+    Rs{pp}.jod = jod - offset;
     Rs{pp}.stats = stats;
     pp = pp + 1;
     
