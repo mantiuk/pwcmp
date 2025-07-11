@@ -53,53 +53,57 @@ if ~isempty(within_set) && ~ismember( within_set, M.Properties.VariableNames )
 end
 
 % Collect all boostrap samples and scaled JODs into a single array
-N_cond = numel(S{1}.conditions);
-
-has_all = false;
+N_cond_all = 0;
+N_group  = 0;
 for gg=1:length(S)
     if strcmp(S{gg}.group, 'all' )
-        has_all = true;
-        break;
+        continue;
     end
+    N_cond_all = N_cond_all + numel(S{gg}.conditions);
+    N_group = N_group+1;
 end
-N_group = length(S) - double(has_all);
 N_bstrp = size(S{1}.stats.bstrp,1);
 
-if height(M) ~= N_cond*N_group
-    error( 'The number of conditions in the table "M" (%d) must be the same as the number of conditions in the scaled subjective results "S" (%d). If table "M" is missing refernce conditions, those need to be added.', height(M), N_cond*N_group );
+if height(M) ~= N_cond_all
+    error( 'The number of conditions in the table "M" (%d) must be the same as the number of conditions in the scaled subjective results "S" (%d). If table "M" is missing reference conditions, those must be added.', height(M), N_cond_all );
 end
 
-bstrp = zeros(N_bstrp,N_cond*N_group);
-jod = zeros(N_cond*N_group,1);
+bstrp = zeros(N_bstrp,N_cond_all);
+jod = zeros(N_cond_all,1);
 grps = cell(N_group,1);
 conds = S{1}.conditions;
+grp_index = nan(N_group,1);
 
 pp = 1;
+pg = 1;
 for gg=1:length(S)
     group = S{gg}.group;
     if strcmp(group, 'all' )
         continue;
     end
-    grps{pp} = group;
-    pos = (pp-1)*N_cond+1;
+    grps{pg} = group;
+    grp_index(pg) = pp;
+    N_cond = numel(S{gg}.conditions);
+    pos = pp;
     bstrp(:,pos:(pos+N_cond-1)) = S{gg}.stats.bstrp;
     jod(pos:(pos+N_cond-1)) = S{gg}.jod;
-    pp = pp+1;
+    pp = pp+N_cond;
+    pg = pg+1;
 end
 
 % Match metric quality score with the subjective dataset score
-met_q =  nan(N_cond*N_group,1); % Metric quality scores
+met_q =  nan(N_cond_all,1); % Metric quality scores
 M.index = nan(height(M),1);
 for kk=1:height(M)
     ind_grp = find(strcmp(M.(opt.group_column){kk},grps));
     if isempty(ind_grp)
         error( 'Group "%s" present in the metric table, but missing in the subjective dataset', M.group{kk} );
     end
-    ind_cond = find(strcmp(M.(opt.condition_column){kk},conds));
+    ind_cond = find(strcmp(M.(opt.condition_column){kk},S{ind_grp}.conditions));
     if isempty(ind_grp)
         error( 'Condition "%s" present in the metric table, but missing in the subjective dataset', M.condition{kk} );
     end
-    ind = (ind_grp-1)*N_cond + ind_cond;
+    ind = grp_index(ind_grp) + ind_cond-1;
     met_q(ind) = M.Q(kk);    
     M.index(kk) = ind;
 end
