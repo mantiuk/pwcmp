@@ -9,6 +9,7 @@ arguments
     options.prior char = 'gaussian'
     options.regularization char {mustBeMember(options.regularization, {'mean0', 'fix0'})} = 'mean0'
     options.do_all logical = false
+    options.use_parallel {mustBeMember(options.use_parallel, {'always', 'never'})} = 'always'
     options.anchor_condition {mustBeText} = ''
 end
 % Scales pairwise comparison results stored in a table
@@ -44,23 +45,12 @@ if isempty(group_col)
 else
     GRs = unique( T.(group_col) ); % list of groups
 end
-C = unique( cat( 1, T.(condition_cols{1}), T.(condition_cols{2}) ) ); % all conditions
-
-if ~isempty( options.anchor_condition )
-    ind = find( strcmp( C, options.anchor_condition ) );
-    if length(ind) ~= 1
-        error( 'Anchor condition %s not found', options.anchor_condition );
-    end
-    C{ind} = C{1};
-    C{1} = options.anchor_condition;
-end
 
 % The observer column must contain strings
 if isnumeric(T.(observer_col))
     T.(observer_col) = mat2cell(num2str(T.(observer_col)), ones(height(T),1));
 end
 
-N = length(C);
 
 if options.do_all
     start_group = 0;
@@ -85,7 +75,20 @@ for gg=start_group:length(GRs)
     fprintf( 1, 'Group: %s\n', group );
     
     OBSs = unique( Ds.(observer_col) );
-        
+
+    C = unique( cat( 1, Ds.(condition_cols{1}), Ds.(condition_cols{2}) ) ); % all conditions within the group
+
+    if ~isempty( options.anchor_condition )
+        ind = find( strcmp( C, options.anchor_condition ) );
+        if length(ind) ~= 1
+            error( 'Anchor condition %s not found', options.anchor_condition );
+        end
+        C{ind} = C{1};
+        C{1} = options.anchor_condition;
+    end
+
+    N = length(C);
+
     MM = zeros(length(OBSs), N*N);
     
     for oo=1:length( OBSs )
@@ -119,7 +122,7 @@ for gg=start_group:length(GRs)
     end
     
     tic
-    [jod, stats] = pw_scale_bootstrp( MM, options.bootstrap_samples, 'prior', options.prior, 'regularization', options.regularization );
+    [jod, stats] = pw_scale_bootstrp( MM, options.bootstrap_samples, 'prior', options.prior, 'regularization', options.regularization, 'use_parallel', options.use_parallel );
     toc    
     
     if ~isempty(group_col)
@@ -128,7 +131,9 @@ for gg=start_group:length(GRs)
 
     if ~isempty( options.anchor_condition ) % 
         offset = jod(1); % Shift the JODs so that the anchor=0
-        stats.bstrp = stats.bstrp-offset;
+        if isfield( stats, 'bstrp' )
+            stats.bstrp = stats.bstrp-offset;
+        end
         stats.jod_low = stats.jod_low-offset;
         stats.jod_high= stats.jod_high-offset;
     else

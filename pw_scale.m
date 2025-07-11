@@ -236,16 +236,17 @@ R(valid) = JOD_dist_fit(valid) -  JOD_dist_data(valid);
                 n = D_sum(pos)';
                 k = D_wUA(pos)';
 
+                epsilon = 1e-8;
                 aux = prob.^(k) .* (1-prob).^((n-k));
                 sumaux = sum(aux);
-                prior = sum(aux./sumaux, 2);
+                prior = sum((aux+epsilon)./(sumaux+epsilon), 2);
 
                 % part of the derivatives.
                 daux_dq_A = (k .* prob.^(max(k-1,0)) .* (1-prob).^((n-k)) + ...
                             prob.^k .* (- n + k) .* (1-prob).^(max(n-k-1,0)));
 
-                part1 = (daux_dq_A*(1./sumaux')) .* dprob_dq;
-                part2 = (1./sumaux.^2 .*aux) * (daux_dq_A'*dprob_dq);
+                part1 = (daux_dq_A*((1+epsilon)./(sumaux+epsilon)')) .* dprob_dq;
+                part2 = ((1+epsilon)./(sumaux.^2+epsilon) .*aux) * (daux_dq_A'*dprob_dq);
                 dprior_dq = part1 - part2;
 
                 % The mean likelihood per answer is our prior (i.e., we compute

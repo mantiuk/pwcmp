@@ -4,7 +4,7 @@ arguments
     bootstrap_samples {mustBeNonnegative, mustBeInteger} = 1
     opt.display {mustBeMember(opt.display, {'info', 'none'})} = 'info'
     opt.alpha {mustBeInRange(opt.alpha, 0, 1)} = 0.05
-    opt.use_parallel = 'always'
+    opt.use_parallel {mustBeMember(opt.use_parallel, {'always', 'never'})} = 'always'
     opt.regularization {mustBeMember(opt.regularization, {'mean0', 'fix0'})} = 'mean0'
     opt.prior {mustBeMember(opt.prior, {'gaussian', 'none'})} = 'gaussian' 
 end
