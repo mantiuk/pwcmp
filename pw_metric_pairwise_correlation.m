@@ -65,7 +65,7 @@ end
 N_bstrp = size(S{1}.stats.bstrp,1);
 
 if height(M) ~= N_cond_all
-    error( 'The number of conditions in the table "M" (%d) must be the same as the number of conditions in the scaled subjective results "S" (%d). If table "M" is missing reference conditions, those must be added.', height(M), N_cond_all );
+    warning( 'The number of conditions in the table "M" (%d) must be the same as the number of conditions in the scaled subjective results "S" (%d). If table "M" is missing reference conditions, those must be added.', height(M), N_cond_all );
 end
 
 bstrp = zeros(N_bstrp,N_cond_all);
@@ -97,11 +97,11 @@ M.index = nan(height(M),1);
 for kk=1:height(M)
     ind_grp = find(strcmp(M.(opt.group_column){kk},grps));
     if isempty(ind_grp)
-        error( 'Group "%s" present in the metric table, but missing in the subjective dataset', M.group{kk} );
+        error( 'Group "%s" present in the metric table "M", but missing in the scaled subjective data "S".', M.group{kk} );
     end
     ind_cond = find(strcmp(M.(opt.condition_column){kk},S{ind_grp}.conditions));
-    if isempty(ind_grp)
-        error( 'Condition "%s" present in the metric table, but missing in the subjective dataset', M.condition{kk} );
+    if isempty(ind_cond)
+        error( 'Condition "%s" present in the metric table "M", but missing in the scaled subjective data "S".', M.(opt.condition_column){kk} );
     end
     ind = grp_index(ind_grp) + ind_cond-1;
     met_q(ind) = M.Q(kk);    
@@ -186,7 +186,11 @@ if opt.scatter_plot
     plot( [0 0], [min(Q_subj_D) max(Q_subj_D)], '--k' );
     hold on
     plot( [min(Q_met_D) max(Q_met_D)], [0 0], '--k' );
-    gscatter( Q_met_D, Q_subj_D, Q_set );    
+    if length(Q_set)>1 && length(Q_set)<20
+        gscatter( Q_met_D, Q_subj_D, Q_set );
+    else
+        scatter( Q_met_D, Q_subj_D, 'o', MarkerEdgeColor='b', MarkerFaceColor='b' );
+    end
     title( sprintf( 'PLCC=%g (%g, %g)', rho, rho_ci(1), rho_ci(2) ) );
     xlabel( 'Metric A-B' )
     ylabel( 'Subjective score A-B [JOD]' )
