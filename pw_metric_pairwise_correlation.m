@@ -161,6 +161,13 @@ end
 Q_subj_D = jod(pairs(:,1)) - jod(pairs(:,2));
 Q_met_D = met_q(pairs(:,1)) - met_q(pairs(:,2));
 
+
+% We want the difference between the subjective score pairs to be only
+% positive
+Q_D_sign = sign(jod(pairs(:,1)) - jod(pairs(:,2)));
+Q_subj_D = Q_subj_D.*Q_D_sign;
+Q_met_D = Q_met_D.*Q_D_sign;
+
 rho = corr( Q_met_D, Q_subj_D, 'Type', 'Pearson' );
 
 % Use boostrapping samples to estimate the confidence interval of the
@@ -181,19 +188,27 @@ B_subj_D = bstrp(brs(:,1),pairs(:,1)) - bstrp(brs(:,2),pairs(:,2));
 rho_dist = corr( Q_met_D, B_subj_D', 'Type', 'Pearson' );
 rho_ci = prctile( rho_dist', [opt.alpha/2*100, 100-opt.alpha/2*100], 'all' );
 
+N_correl = numel(Q_subj_D);
+
 if opt.scatter_plot
     clf;
-    plot( [0 0], [min(Q_subj_D) max(Q_subj_D)], '--k' );
+
+    % v_range = [0, max(Q_met_D)];
+    % pv = [geomean(Q_subj_D./Q_met_D) 0];
+    % vv = linspace( v_range(1), v_range(2) );
+    % plot( vv, polyval( pv, vv ), '--k' );
+    
+    plot( [0 0], [0 max(Q_met_D)], '--k' );
     hold on
-    plot( [min(Q_met_D) max(Q_met_D)], [0 0], '--k' );
+    plot( [0 max(Q_subj_D)], [0 0], '--k' );
     if length(Q_set)>1 && length(Q_set)<20
-        gscatter( Q_met_D, Q_subj_D, Q_set );
+        gscatter( Q_subj_D, Q_met_D, Q_set );
     else
-        scatter( Q_met_D, Q_subj_D, 'o', MarkerEdgeColor='b', MarkerFaceColor='b' );
+        scatter( Q_subj_D, Q_met_D, 'o', MarkerEdgeColor='b', MarkerFaceColor='b' );
     end
-    title( sprintf( 'PLCC=%g (%g, %g)', rho, rho_ci(1), rho_ci(2) ) );
-    xlabel( 'Metric A-B' )
-    ylabel( 'Subjective score A-B [JOD]' )
+    title( sprintf( 'PLCC=%g (%g, %g) N=%d', rho, rho_ci(1), rho_ci(2), N_correl ) );
+    ylabel( 'Metric A-B' )
+    xlabel( 'Subjective score A-B [JOD]' )
 end
 
 
