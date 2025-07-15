@@ -1,4 +1,4 @@
-function [rho, rho_ci] = pw_metric_pairwise_correlation( S, M, within_set, opt )
+function [RMSE, RMSE_ci] = pw_metric_pairwise_rmse( S, M, within_set, opt )
 arguments
     S  % cell array with scaled subjective data, returned by pw_scale_table
     M {istable(M)}
@@ -8,16 +8,16 @@ arguments
     opt.alpha {mustBeInRange(opt.alpha,0,1)} = 0.05
     opt.scatter_plot {mustBeNumericOrLogical} = false
 end
-% The function computes the correlation between subjective scores (cell array
-% S) and metric predictions (table M) for the pairs of conditions that are
-% statistically different. The correlation is computed for the differences
-% between the pairs (A,B) as corr( JOD_A - JOD_B, MET_A - MET_B ).
+% The function computes the root-mean-square error between subjective scores 
+% (cell array S) and metric predictions (table M) for the pairs of conditions that are
+% statistically different. The RMSE is computed for the differences
+% between the pairs (A,B) as RMSE( JOD_A - JOD_B, MET_A - MET_B ).
 %
 % This analysis offers two advantages:
 % - we ignore the pairs for which there is insufficient statistical evidence
 % to claim that one condition is better than another (the subjective data 
 % is too noisy)
-% - we can measure the correlation while discounting the effect of one or
+% - we can measure the RMSE while discounting the effect of one or
 % more factors. For example, we can check whether metric can predict the
 % content-dependent differences in quality while ignoring all other factors. 
 % This is controlled by the `within_set` parameter.
@@ -162,9 +162,10 @@ Q_subj_D = jod(pairs(:,1)) - jod(pairs(:,2));
 Q_met_D = met_q(pairs(:,1)) - met_q(pairs(:,2));
 
 
-% We want the difference between the subjective score pairs to be only
+% We want the difference between the metric score pairs to be only
 % positive
-Q_D_sign = sign(jod(pairs(:,1)) - jod(pairs(:,2)));
+%Q_D_sign = sign(jod(pairs(:,1)) - jod(pairs(:,2)));
+Q_D_sign = sign(Q_met_D);
 
 % Then, we take half of the compared pairs and flip the sign
 N_pairs = length(Q_subj_D);
@@ -176,11 +177,14 @@ Q_subj_D = Q_subj_D.*Q_D_sign;
 Q_met_D = Q_met_D.*Q_D_sign;
 
 
-rho = corr( Q_met_D, Q_subj_D, 'Type', 'Pearson' );
+slope_sub = sum(Q_subj_D.*Q_met_D)/sum(Q_met_D.*Q_met_D);
+RMSE = sqrt(mean((Q_subj_D - slope_sub.*Q_met_D).^2));
+
+%rho = corr( Q_met_D, Q_subj_D, 'Type', 'Pearson' );
 
 % Use boostrapping samples to estimate the confidence interval of the
 % correlations
-if true
+if false
     % Random sample
     N_samples = N_bstrp*floor(sqrt(N_bstrp));
     brs = randi(N_bstrp, N_samples, 2);
@@ -191,16 +195,17 @@ else
 end
 
 % Use boostrap samples
-B_subj_D = bstrp(brs(:,1),pairs(:,1)) - bstrp(brs(:,2),pairs(:,2));
+B_subj_D = (bstrp(brs(:,1),pairs(:,1)) - bstrp(brs(:,2),pairs(:,2)))' .* Q_D_sign;
+    
+slope_dist = sum(B_subj_D.*Q_met_D)/sum(Q_met_D.*Q_met_D);
+RMSE_dist = sqrt(mean((B_subj_D - slope_dist.*Q_met_D).^2, 1));
+RMSE_ci = prctile( RMSE_dist', [opt.alpha/2*100, 100-opt.alpha/2*100], 'all' );
 
-rho_dist = corr( Q_met_D, B_subj_D', 'Type', 'Pearson' );
-rho_ci = prctile( rho_dist', [opt.alpha/2*100, 100-opt.alpha/2*100], 'all' );
+%rho_dist = corr( Q_met_D, B_subj_D', 'Type', 'Pearson' );
+%rho_ci = prctile( rho_dist', [opt.alpha/2*100, 100-opt.alpha/2*100], 'all' );
 
 N_correl = numel(Q_subj_D);
 
-
-slope_sub = sum(Q_subj_D.*Q_met_D)/sum(Q_met_D.*Q_met_D);
-RMSE = sqrt(mean((Q_subj_D - slope_sub.*Q_met_D).^2));
 
 if opt.scatter_plot
     % v_range = [0, max(Q_met_D)];
@@ -225,7 +230,8 @@ if opt.scatter_plot
         scatter( Q_subj_D, Q_met_D, 'o', MarkerEdgeColor='b', MarkerFaceColor='b' );
     end
     
-    title( sprintf( 'PLCC=%.3g (%.3g, %.3g), RMSE=%.3g, N=%d', rho, rho_ci(1), rho_ci(2), RMSE, N_correl ) );
+    %title( sprintf( 'PLCC=%.3g (%.3g, %.3g), RMSE=%.3g, N=%d', rho, rho_ci(1), rho_ci(2), RMSE, N_correl ) );
+    title( sprintf( 'RMSE=%.3g (%.3g, %.3g), N=%d', RMSE, RMSE_ci(1), RMSE_ci(2), N_correl ) );
     ylabel( 'Metric A-B' )
     xlabel( 'Subjective score A-B [JOD]' )
 end
