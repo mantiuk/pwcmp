@@ -162,16 +162,16 @@ Q_subj_D = jod(pairs(:,1)) - jod(pairs(:,2));
 Q_met_D = met_q(pairs(:,1)) - met_q(pairs(:,2));
 
 
-% We want the difference between the metric score pairs to be only
+% We want the difference between the subjective score pairs to be only
 % positive
 %Q_D_sign = sign(jod(pairs(:,1)) - jod(pairs(:,2)));
-Q_D_sign = sign(Q_met_D);
+Q_D_sign = sign(Q_subj_D);
 
 % Then, we take half of the compared pairs and flip the sign
-N_pairs = length(Q_subj_D);
-rp = randperm( N_pairs )';
-ss = rp<(N_pairs/2);
-Q_D_sign(ss) = -Q_D_sign(ss);
+% N_pairs = length(Q_subj_D);
+% rp = randperm( N_pairs )';
+% ss = rp<(N_pairs/2);
+% Q_D_sign(ss) = -Q_D_sign(ss);
 
 Q_subj_D = Q_subj_D.*Q_D_sign;
 Q_met_D = Q_met_D.*Q_D_sign;
@@ -213,27 +213,25 @@ if opt.scatter_plot
     % vv = linspace( v_range(1), v_range(2) );
     % plot( vv, polyval( pv, vv ), '--k' );
     
-    plot( [0 0], [min(Q_met_D) max(Q_met_D)], '--k' );
+    plot( [min(Q_met_D) max(Q_met_D)], [0 0], '--k' );
     hold on
-    rng = [min(Q_subj_D) max(Q_subj_D)];
-    plot( rng, [0 0], '--k' );
+    rng = [0 max(Q_subj_D)];
+    plot( [0 0], rng, '--k' );
     % slope_met = sum(Q_met_D.*Q_subj_D)/sum(Q_subj_D.*Q_subj_D);
     % plot( rng, slope_met*rng, '--m' );
     rng_met = [min(Q_met_D) max(Q_met_D)];
-    plot( slope_sub*rng_met, rng_met, '--r' );
-
-
+    plot( rng_met, slope_sub*rng_met, '--r' );
 
     if length(Q_set)>1 && length(Q_set)<20
-        gscatter( Q_subj_D, Q_met_D, Q_set );
+        gscatter( Q_met_D, Q_subj_D, Q_set );
     else
-        scatter( Q_subj_D, Q_met_D, 'o', MarkerEdgeColor='b', MarkerFaceColor='b' );
+        scatter( Q_met_D, Q_subj_D, 'o', MarkerEdgeColor='b', MarkerFaceColor='b' );
     end
     
     %title( sprintf( 'PLCC=%.3g (%.3g, %.3g), RMSE=%.3g, N=%d', rho, rho_ci(1), rho_ci(2), RMSE, N_correl ) );
     title( sprintf( 'RMSE=%.3g (%.3g, %.3g), N=%d', RMSE, RMSE_ci(1), RMSE_ci(2), N_correl ) );
-    ylabel( 'Metric A-B' )
-    xlabel( 'Subjective score A-B [JOD]' )
+    xlabel( 'Metric A-B' )
+    ylabel( 'Subjective score A-B [JOD]' )
 end
 
 
