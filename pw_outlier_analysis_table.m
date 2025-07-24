@@ -54,7 +54,7 @@ N = length(C);
 
 OBSs = unique( T.(observer_col) );
 
-N_obs = numel(OBSs);
+N_obs = zeros(length(GRs),1);
 
 MM_groups = cell(length(GRs),1);
 for gg=1:length(GRs) % for each group
@@ -64,6 +64,7 @@ for gg=1:length(GRs) % for each group
     fprintf( 1, 'Group: %s\n', group );
     
     OBSs = unique( Ds.(observer_col) );
+    N_obs(gg) = numel(OBSs);
         
     MM = zeros(length(OBSs), N*N);
     
@@ -100,12 +101,16 @@ for gg=1:length(GRs) % for each group
     MM_groups{gg} = MM;
 end
 
+if any(N_obs(1)~=N_obs)
+    error( 'Outlier analysis requires the same number of observers in each group' );
+end
+
 [L, dist_L] = pw_outlier_analysis(MM_groups);
 
 fq = quantile(L,0.25);
 
 clf;
-ind = 1:N_obs;
+ind = 1:length(L);
 plot( [1 1]*10.^fq, [ind(1), ind(end)], '--k' );
 hold on;
 plot( 10.^L, ind, 'ob', 'MarkerFaceColor', 'b' );
@@ -119,6 +124,6 @@ set( gca, 'YTickLabel', OBSs );
 xlabel( '(Expected) likelihood' );
 title( 'The higher likelihood means higher similarity to all other observers', 'FontWeight', 'normal' );
 grid on;
-ylim( [0.5 N_obs+0.5] );
+ylim( [0.5 N_obs(1)+0.5] );
 
 end

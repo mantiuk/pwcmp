@@ -142,8 +142,8 @@ for gg=start_group:length(GRs)
 
     S.condition = C;
     S.jod = jod - offset;
-    S.jod_low = stats.jod_low - offset;
-    S.jod_high = stats.jod_high - offset;
+    S.jod_low = stats.jod_low;
+    S.jod_high = stats.jod_high;
 
     Rn = struct2table(S);
         
